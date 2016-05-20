@@ -11,6 +11,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 from math import *
 
+import optparse
 # import Image
 # import re
 
@@ -23,6 +24,31 @@ from math import *
 # def keyFunc(afilename):
 #     nondigits = re.compile("\D")
 #     return int(nondigits.sub("", afilename))
+
+
+parser = optparse.OptionParser()
+parser.add_option('--headless', action="store_true", dest="headless",
+                  default=False, help="run in headless mode, no figs")
+
+parser.add_option('--imformat', action="store",
+                  dest="im_format", default="png", help="saved image format")
+parser.add_option('--nmorphs', action="store",
+                  dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
+parser.add_option('--append', action="store",
+                  dest="append_name", default="", help="append string to saved file name")
+parser.add_option('--output-path', action="store",
+                  dest="outdir", default="/tmp", help="output path for rendered images and povs")
+
+
+(options, args) = parser.parse_args()
+
+outdir = options.outdir
+
+im_format = str(options.im_format)
+headless = options.headless
+
+n_real_morphs = int(options.nmorphs)
+
 
 def sigmoid(x, a=1, b=0):
 	return 1./(1+np.exp(-a*x-b))
@@ -93,17 +119,17 @@ def linmap(diffvec, nmorphs, constrain=[0,-1]):
 
 # Create new output directory if it doesn't exist:
 # base_dir = 'output3'
-base_dir = 'test_remake_scale'
+# base_dir = 'test_remake_scale'
 
-povdirectory =  './%s/pov' % base_dir
+povdirectory =  '%s/pov' % outdir
 if not os.path.exists(povdirectory):
     os.makedirs(povdirectory)
 
-imdirectory =  './%s/im' % base_dir
+imdirectory =  '%s/im' % outdir
 if not os.path.exists(imdirectory):
     os.makedirs(imdirectory)
 
-tmpdirectory =  './%s/tmp' % base_dir
+tmpdirectory =  '%s/tmp' % outdir
 if not os.path.exists(tmpdirectory):
     os.makedirs(tmpdirectory)
 
@@ -111,7 +137,7 @@ if not os.path.exists(tmpdirectory):
 # SET NUM OF MORPHS BETWEEN Strt and End:
 # ==================================================================
 
-n_real_morphs = 30
+# n_real_morphs = 30
 n_total_morphs = n_real_morphs+2 # first and last 'morph' are the originals
 
 
@@ -646,7 +672,7 @@ def run():
 		# save formatted file: 
 		# imname = 'morph%i.pov' % morphnum
 		outpath = povdirectory + '/morph%i.pov' % int(morph_num)
-		impath = imdirectory + '/morph%i.png' % int(morph_num)
+		impath = imdirectory + '/morph%i.%s' % (int(morph_num), im_format)
 		with open(outpath, "wb") as fn:
 			fn.write(command)
 
