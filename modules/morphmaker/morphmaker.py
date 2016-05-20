@@ -80,73 +80,73 @@ def copyFile(src, dest):
         print('Error: %s' % e.strerror)
 
 def get_even_dists(imdirectory, tmpdirectory, npoints, ext='.png'):
-	# Get image paths for all ims -- sample from this bank:
-	all_ims = sorted([f for f in os.listdir(imdirectory) if f.endswith(ext)],key=keyFunc)
-	all_impaths = [os.path.join(imdirectory, f) for f in all_ims]
+    # Get image paths for all ims -- sample from this bank:
+    all_ims = sorted([f for f in os.listdir(imdirectory) if f.endswith(ext)],key=keyFunc)
+    all_impaths = [os.path.join(imdirectory, f) for f in all_ims]
 
-	fims, im_mat = get_imagemat_fromdir(imdirectory)
-	diffs = get_pairwise_diffs(im_mat,plot=1)
-	s = scipy.cumsum(diffs)
-	#plt.figure()
-	#plt.plot(s)
-	stp = list(spread.spread(0,s[-1],npoints+1,mode=3))
-	indices = []
-	for n,interval in enumerate(stp[1:len(stp)]):
-		idx = [i for i,val in enumerate(s) if (val>=interval)]
-		indices.append(idx)
-	first_match = [v[0]+1 for v in indices]
-	#usethese = s[first_match]
-	#morphids = [i for i,csum in enumerate(s) if csum==usethese[0]
-	first_match.extend([0])
-	morphids = sorted(first_match)
-	morphseq = [all_impaths[x] for x in morphids]
+    fims, im_mat = get_imagemat_fromdir(imdirectory)
+    diffs = get_pairwise_diffs(im_mat,plot=1)
+    s = scipy.cumsum(diffs)
+    #plt.figure()
+    #plt.plot(s)
+    stp = list(spread.spread(0,s[-1],npoints+1,mode=3))
+    indices = []
+    for n,interval in enumerate(stp[1:len(stp)]):
+        idx = [i for i,val in enumerate(s) if (val>=interval)]
+        indices.append(idx)
+    first_match = [v[0]+1 for v in indices]
+    #usethese = s[first_match]
+    #morphids = [i for i,csum in enumerate(s) if csum==usethese[0]
+    first_match.extend([0])
+    morphids = sorted(first_match)
+    morphseq = [all_impaths[x] for x in morphids]
 
-	if not os.path.exists(tmpdirectory):
-	    os.makedirs(tmpdirectory)
-	
-	for i in morphseq:
-		copyFile(i, tmpdirectory)
-	for idx,morphname in enumerate(sorted([f for f in os.listdir(tmpdirectory) if f.endswith(ext)],key=keyFunc)):
-		old = morphname.split("morph")[1]
-		old = old.split('.')[0]
-		morphname = os.path.join(tmpdirectory,morphname)
-		os.rename(morphname, morphname.replace(old, str(idx)))
+    if not os.path.exists(tmpdirectory):
+        os.makedirs(tmpdirectory)
+    
+    for i in morphseq:
+        copyFile(i, tmpdirectory)
+    for idx,morphname in enumerate(sorted([f for f in os.listdir(tmpdirectory) if f.endswith(ext)],key=keyFunc)):
+        old = morphname.split("morph")[1]
+        old = old.split('.')[0]
+        morphname = os.path.join(tmpdirectory,morphname)
+        os.rename(morphname, morphname.replace(old, str(idx)))
 
 def run():
-	get_even_dists(imdirectory,tmpdirectory,int(nmorphs), ext='.'+im_format)
+    get_even_dists(imdirectory,tmpdirectory,int(nmorphs), ext='.'+im_format)
 
 if __name__ == '__main__':
-	# imdirectory = sys.argv[1]
-	# tmpdirectory = sys.argv[2]
-	# # if not os.path.exists(tmpdirectory):
-	# #     os.makedirs(tmpdirectory)
-	# nmorphs = sys.argv[3]
+    # imdirectory = sys.argv[1]
+    # tmpdirectory = sys.argv[2]
+    # # if not os.path.exists(tmpdirectory):
+    # #     os.makedirs(tmpdirectory)
+    # nmorphs = sys.argv[3]
 
 
-	parser = optparse.OptionParser()
-	parser.add_option('--headless', action="store_true", dest="headless",
-	                  default=False, help="run in headless mode, no figs")
+    parser = optparse.OptionParser()
+    parser.add_option('--headless', action="store_true", dest="headless",
+                      default=False, help="run in headless mode, no figs")
 
-	parser.add_option('--imformat', action="store",
-	                  dest="im_format", default="png", help="saved image format")
-	parser.add_option('--nmorphs', action="store",
-	                  dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
-	parser.add_option('--append', action="store",
-	                  dest="append_name", default="", help="append string to saved file name")
-	parser.add_option('--output-path', action="store",
-	                  dest="outdir", default="/tmp", help="output path for selected morphs")
-	parser.add_option('--input-path', action="store",
-	                  dest="imdir", default="/tmp", help="input path of rendered morphs")
+    parser.add_option('--imformat', action="store",
+                      dest="im_format", default="png", help="saved image format")
+    parser.add_option('--nmorphs', action="store",
+                      dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
+    parser.add_option('--append', action="store",
+                      dest="append_name", default="", help="append string to saved file name")
+    parser.add_option('--output-path', action="store",
+                      dest="outdir", default="/tmp", help="output path for selected morphs")
+    parser.add_option('--input-path', action="store",
+                      dest="imdir", default="/tmp", help="input path of rendered morphs")
 
 
-	(options, args) = parser.parse_args()
+    (options, args) = parser.parse_args()
 
-	imdirectory = options.imdir
-	tmpdirectory = options.outdir
+    imdirectory = options.imdir
+    tmpdirectory = options.outdir
 
-	im_format = str(options.im_format)
-	headless = options.headless
+    im_format = str(options.im_format)
+    headless = options.headless
 
-	nmorphs = int(options.nmorphs)
+    nmorphs = int(options.nmorphs)
 
-	run()
+    run()
