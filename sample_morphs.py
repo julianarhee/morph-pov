@@ -35,7 +35,7 @@ if __name__ == '__main__':
                       default=False, help="run in headless mode, no figs")
 
     parser.add_option('--imformat', action="store",
-                      dest="im_format", default="png", help="saved image format")
+                      dest="im_format", default=".png", help="saved image format")
     parser.add_option('--nmorphs', action="store",
                       dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
     parser.add_option('--append', action="store",
@@ -56,8 +56,15 @@ if __name__ == '__main__':
 
     nmorphs = int(options.nmorphs)
 
-    get_even_dists(imdirectory,tmpdirectory,int(nmorphs), ext='.'+im_format)
+    cumsumd = get_even_dists(imdirectory, tmpdirectory, int(nmorphs), im_format)
 
+    fims, im_mat = get_imagemat_fromdir(imdirectory)
+    print "IMS: ", len(fims)
+    # dfifs, s = get_pairwise_diffs(im_mat)
+
+
+    plot = 1
+    plot_differences(imdirectory, np.diff(cumsumd), cumsumd, plot)
 
 
     

@@ -680,7 +680,8 @@ def run():
 		AspRat = 320/240.
 		xres = 1100
 		yres = int( xres / AspRat )
-		os.system('povray +I%s +O%s +W%s +H%s' % (outpath, impath, str(xres), str(yres)))
+		os.system('povray +I%s +O%s +W%s +H%s -D' % (outpath, impath, str(xres), str(yres))) # -D switch turns off graphic display
+		
 		# os.system('povray +I%s +O%s' % (outpath, impath))
 	# 	os.system('qlmanage -p 2>/dev/null %s &' % impath)
 	# os.system('killall qlmanage')

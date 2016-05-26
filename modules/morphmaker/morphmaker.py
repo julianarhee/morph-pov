@@ -81,16 +81,25 @@ def copyFile(src, dest):
 
 def get_even_dists(imdirectory, tmpdirectory, npoints, ext='.png'):
     # Get image paths for all ims -- sample from this bank:
-    all_ims = sorted([f for f in os.listdir(imdirectory) if f.endswith(ext)],key=keyFunc)
+
+    if '.' not in ext:
+        print "adding extension format"
+        ext = '.'+ext
+
+    all_ims = sorted([f for f in os.listdir(imdirectory) if f.endswith(ext)], key=keyFunc)
     all_impaths = [os.path.join(imdirectory, f) for f in all_ims]
 
     fims, im_mat = get_imagemat_fromdir(imdirectory)
-    diffs = get_pairwise_diffs(im_mat,plot=1)
-    s = scipy.cumsum(diffs)
-    #plt.figure()
-    #plt.plot(s)
-    stp = list(spread.spread(0,s[-1],npoints+1,mode=3))
+    print "IMS: ", len(fims)
+    diffs, s = get_pairwise_diffs(im_mat)
+    # s = scipy.cumsum(diffs)
+    print len(s)
+    # plt.figure()
+    # plt.plot(s)
+    # plt.show()
+    stp = list(spread.spread(0, s[-1], npoints+1, mode=3))
     indices = []
+    print "LEN: ", len(stp)
     for n,interval in enumerate(stp[1:len(stp)]):
         idx = [i for i,val in enumerate(s) if (val>=interval)]
         indices.append(idx)
@@ -99,7 +108,10 @@ def get_even_dists(imdirectory, tmpdirectory, npoints, ext='.png'):
     #morphids = [i for i,csum in enumerate(s) if csum==usethese[0]
     first_match.extend([0])
     morphids = sorted(first_match)
-    morphseq = [all_impaths[x] for x in morphids]
+    for x in morphids:
+        print x, all_impaths[x]
+    morphseq = [all_impaths[int(x)] for x in morphids]
+
 
     if not os.path.exists(tmpdirectory):
         os.makedirs(tmpdirectory)
@@ -112,8 +124,10 @@ def get_even_dists(imdirectory, tmpdirectory, npoints, ext='.png'):
         morphname = os.path.join(tmpdirectory,morphname)
         os.rename(morphname, morphname.replace(old, str(idx)))
 
+    return s
+
 def run():
-    get_even_dists(imdirectory,tmpdirectory,int(nmorphs), ext='.'+im_format)
+    get_even_dists(imdirectory,tmpdirectory,int(nmorphs), ext=im_format)
 
 if __name__ == '__main__':
     # imdirectory = sys.argv[1]

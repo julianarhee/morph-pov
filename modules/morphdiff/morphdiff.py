@@ -17,7 +17,10 @@ fmt : format of input images
 # __init__.py is empty except for imports.
 import sys, os, os.path
 import scipy.spatial
-# import Image
+try:
+    import Image
+except:
+    from PIL import Image
 import numpy as np
 import re
 import matplotlib.pyplot as plt
@@ -57,6 +60,16 @@ def get_imagemat(imdirectory,ims,ext='.png'):
     return ims, matrix
 
 def get_pairwise_diffs(im_mat):
+
+    '''
+    
+    Each row is an unraveled image. Take Euclid distance between each, over pairwise combinations.
+    Pairs are only consecutive images (not all combinations). 
+
+    i.e,. this assumes that the diff between x3 and x2 is smaller than the diff between x3 and x1.
+
+    '''
+    
     diff = [scipy.spatial.distance.euclidean(x[1],x[0]) for x in zip(im_mat[1:],im_mat[:-1])]
     s = scipy.cumsum(diff)
 
@@ -67,11 +80,19 @@ def plot_differences(imdirectory, distances, cumsumd, plot):
 
     plt.figure()
     plt.plot(distances)
+    plt.ylabel('euclidean distance between sampled images')
+    plt.xlabel('image number')
     plt.title('Euclidian Distance')
 
     imname = 'euclidian_distance'
-    basedir = os.path.split(imdirectory)[0]
-    impath = os.path.join(basedir, 'figures', imname+'.jpg')
+    figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
+
+
+    if not os.path.exists(figdir):
+        os.makedirs(figdir)
+
+
+    impath = os.path.join(figdir, imname+'.jpg')
     plt.savefig(impath, format='jpg')
 
     if plot:
