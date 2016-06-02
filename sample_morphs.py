@@ -23,48 +23,64 @@ import matplotlib.pyplot as plt
 
 import optparse
 
-from morphdiff import *
-from morphmaker import *
+# from imagemat import *
+import euclid as euc
+import projection as proj
 
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    parser = optparse.OptionParser()
-    parser.add_option('--headless', action="store_true", dest="headless",
-                      default=False, help="run in headless mode, no figs")
+parser = optparse.OptionParser()
+parser.add_option('--headless', action="store_true", dest="headless",
+                  default=False, help="run in headless mode, no figs")
+parser.add_option('--plot', action="store_true", dest="plot",
+                  default=False, help="show plots of sampled intervals")
+parser.add_option('--imformat', action="store",
+                  dest="im_format", default=".png", help="saved image format")
+parser.add_option('--nmorphs', action="store",
+                  dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
+parser.add_option('--append', action="store",
+                  dest="append_name", default="", help="append string to saved file name")
+parser.add_option('--output-path', action="store",
+                  dest="outdir", default="/tmp", help="output path for selected morphs")
+parser.add_option('--input-path', action="store",
+                  dest="imdir", default="/tmp", help="input path of rendered morphs")
+parser.add_option('--method', action="store", dest='method', type="choice", choices=['euclid', 'project'], default='euclid', help="sampling method, euclid | project [default: euclid]")
 
-    parser.add_option('--imformat', action="store",
-                      dest="im_format", default=".png", help="saved image format")
-    parser.add_option('--nmorphs', action="store",
-                      dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
-    parser.add_option('--append', action="store",
-                      dest="append_name", default="", help="append string to saved file name")
-    parser.add_option('--output-path', action="store",
-                      dest="outdir", default="/tmp", help="output path for selected morphs")
-    parser.add_option('--input-path', action="store",
-                      dest="imdir", default="/tmp", help="input path of rendered morphs")
+(options, args) = parser.parse_args()
+
+imdirectory = options.imdir
+outdirectory = options.outdir
+
+im_format = str(options.im_format)
+headless = options.headless
+
+nmorphs = int(options.nmorphs)
+method = options.method
+
+plot = options.plot
+
+print "METHOD: %s" % method
+
+if method=='euclid':
+
+    print "Using Euclidean distance..."
+
+    cumsumd = euc.get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), im_format)
+
+    if plot:
+        euc.plot_euclidean(imdirectory, np.diff(cumsumd), cumsumd, show_plot=plot)
+
+elif method=='project':
+
+    print "Using scalar projection..."
+
+    projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format)
+    
+    if plot:
+        proj.plot_sample_projections(projs, idxs, imdirectory, show_plot=plot)
 
 
-    (options, args) = parser.parse_args()
-
-    imdirectory = options.imdir
-    tmpdirectory = options.outdir
-
-    im_format = str(options.im_format)
-    headless = options.headless
-
-    nmorphs = int(options.nmorphs)
-
-    cumsumd = get_even_dists(imdirectory, tmpdirectory, int(nmorphs), im_format)
-
-    fims, im_mat = get_imagemat_fromdir(imdirectory)
-    print "IMS: ", len(fims)
-    # dfifs, s = get_pairwise_diffs(im_mat)
-
-
-    plot = 1
-    plot_differences(imdirectory, np.diff(cumsumd), cumsumd, plot)
-
-
+print outdirectory
     

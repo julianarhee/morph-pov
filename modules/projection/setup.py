@@ -2,5 +2,5 @@
 
 from distutils.core import setup
 
-NAME = 'morphdiff'
+NAME = 'projection'
 setup(name=NAME, version='0.0.1', py_modules=[NAME])
