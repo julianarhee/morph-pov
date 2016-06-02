@@ -5,6 +5,9 @@ close all
 source_root='/home/juliana/Documents/projects/morphs/V1_feature_morphs/';
 out_root='/home/juliana/Documents/projects/morphs/V1_feature_samples/';
 
+im_root='/home/juliana/Documents/projects/morphs/morph5000_gray/';
+
+
 if ~isdir(out_root)
     mkdir(out_root)
     sprintf('Created output dir: %s', out_root)
@@ -62,6 +65,7 @@ remove_idxs = corr_vect == 1;     % find all repeated corrs of first vector
 remove_idxs(1) = 0;               % obviously keep first vector
 corr_vect(remove_idxs) = [];      % get rid of the rest
 
+%%
 % Test first x images to make sure corr_vect has the right stuff...
 Fs = [];
 x = 20;
@@ -74,10 +78,29 @@ check_vect = pcorr_mat(:,1);
 
 so_true = check_vect==corr_vect;
 
-
-
-
-all_corrs = pcorr_mat(:,1); % all corr coeffs of 1 to 2, 1 to 3, 1 to 4, etc.
+%% Get linearly-spaced samples
 
 nmorphs = 20;
-lin_samples = linspace(min(all_corrs), max(all_cors), nmorphs+2); % add 2 to account for anchors
+lin_samples = linspace(min(corr_vect), max(corr_vect), nmorphs+2); % add 2 to account for anchors
+
+sample_idxs = [];
+for i=1:length(lin_samples)
+    [c index] = min(abs(corr_vect-lin_samples(i)));
+    sample_idxs = [sample_idxs [c index]];
+end
+
+% and save them...
+
+im_info = dir([im_root,'*.png']);
+im_names = cell(1, length(im_info));
+for i=1:length(im_info)
+    im_names{i} = im_nifo(i).name;
+end
+im_names = sort_nat(im_names);
+
+for i=1:length(sample_idxs)
+   curr_sample_idx = sample_idxs(i)(2);
+   
+   curr_sample = im_names(curr_sample_idx);
+   copyfile(['im_root', curr_sample], ['out_root', curr_sample]);
+end
