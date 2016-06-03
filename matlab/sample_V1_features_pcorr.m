@@ -2,13 +2,13 @@ clear all
 close all
 
 
-source_root='/home/juliana/Documents/projects/morphs/V1_feature_morphs/';
-out_root='/home/juliana/Documents/projects/morphs/V1_feature_samples_pcorr/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize_samples_pcorr/';
 
-im_root='/home/juliana/Documents/projects/morphs/morph5000_gray/';
+im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray_resize/';
 
 
-base_dir = '/home/juliana/Documents/projects/morphs/';
+base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/';
 
 if ~isdir(out_root)
     mkdir(out_root)
@@ -36,7 +36,7 @@ first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 % nchunks = floor(length(fnames)/chunk_size);
     
 corr_vect = [];
-curr_vect_idx = 2;
+curr_vect_idx = 1;
 while 1
 % for c=1:nchunks+1 %-1
 % for c=251:nchunks+100 %-1   
@@ -57,9 +57,14 @@ while 1
 %     end
     
 %     F(:,1) = first_feature_vect;
+
+    if mod(curr_vect_idx, 100) == 0
+	sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
+    end
+
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     
-    pcorr = corr(first_feature_vect, curr_vect.featureVector);
+    pcorr = corr(first_feature_vect', curr_vect.featureVector');
 %     all_corrs = pcorr_mat(:,1);
     
     corr_vect = [corr_vect; pcorr];

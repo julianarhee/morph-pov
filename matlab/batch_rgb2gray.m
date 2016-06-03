@@ -2,8 +2,8 @@ clear all
 close all
 
 
-source_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/im/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph5000/im/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph5000_gray/';
 
 if ~isdir(out_root)
     mkdir(out_root)
@@ -22,7 +22,7 @@ for i=1:length(imnames)
     end
          
     curr_im = [source_root,'morph', num2str(morph_idx),'.png'];
-    im = double(imread(curr_im));
+    im = imread(curr_im);
     im = rgb2gray(im);
     imwrite(im, [out_root, sprintf('morph%i.png', morph_idx)]);
   
