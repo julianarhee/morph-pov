@@ -59,9 +59,10 @@ while 1
 %     F(:,1) = first_feature_vect;
 
     if mod(curr_vect_idx, 100) == 0
-	sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
+        sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
     end
-
+        
+    
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     
     pcorr = corr(first_feature_vect', curr_vect.featureVector');
@@ -86,7 +87,8 @@ while 1
 
 end
 
-% with extra1's, lengh(corr_vect)=5264
+% with extra1's, lengh(corr_vect)=5264, chunk = 20
+% with extra1's, length(corr_vect) = 6251, chunk = 5
 
 % remove_idxs = corr_vect == 1;     % find all repeated corrs of first vector
 % remove_idxs(1) = 0;               % obviously keep first vector

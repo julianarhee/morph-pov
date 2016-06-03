@@ -26,7 +26,7 @@ import optparse
 # from imagemat import *
 import euclid as euc
 import projection as proj
-
+import correlation as corr
 
 
 # if __name__ == '__main__':
@@ -46,7 +46,7 @@ parser.add_option('--output-path', action="store",
                   dest="outdir", default="/tmp", help="output path for selected morphs")
 parser.add_option('--input-path', action="store",
                   dest="imdir", default="/tmp", help="input path of rendered morphs")
-parser.add_option('--method', action="store", dest='method', type="choice", choices=['euclid', 'project'], default='euclid', help="sampling method, euclid | project [default: euclid]")
+parser.add_option('--method', action="store", dest='method', type="choice", choices=['euclid', 'project', 'corr'], default='euclid', help="sampling method, euclid | project [default: euclid]")
 
 (options, args) = parser.parse_args()
 
@@ -67,10 +67,10 @@ if method=='euclid':
 
     print "Using Euclidean distance..."
 
-    cumsumd = euc.get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), im_format)
+    dists, cumsumd, morphids = euc.get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), im_format)
 
     if plot:
-        euc.plot_euclidean(imdirectory, np.diff(cumsumd), cumsumd, show_plot=plot)
+        euc.plot_euclidean(imdirectory, dists, cumsumd, morphids, show_plot=True)
 
 elif method=='project':
 
@@ -81,6 +81,14 @@ elif method=='project':
     if plot:
         proj.plot_sample_projections(projs, idxs, imdirectory, show_plot=plot)
 
+elif method=='corr':
+
+    print "Using correlation..."
+
+    idxs, coeffs = corr.get_sampled_morphs(nmorphs, imdirectory, outdirectory, im_format)
+
+    if plot:
+        corr.plot_sampled_morphs(idxs, coeffs, imdirectory, show_plot=plot)
 
 print outdirectory
     
