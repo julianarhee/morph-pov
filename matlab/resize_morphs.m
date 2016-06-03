@@ -11,16 +11,16 @@ if ~isdir(outdir)
     sprintf('Created output dir: %s', outdir)
 end
 
-finfo = dir([imdir,'*.mat']);
+finfo = dir([imdir,'*.png']);
 fnames = cell(1, length(finfo));
 for i=1:length(finfo)
     fnames{i} = finfo(i).name;
 end
 fnames = sort_nat(fnames);
 
-fprintf('Resizing %s images from dir: %s', str(length(fnames), imdir))
-ResizeBlobRatStims_General(fnames, imdir, outdir);
-fprintf('FINISHED. Output saved to dir: %s', outdir)
+sprintf('Resizing %s images from dir: %s', num2str(length(fnames)), imdir)
+ResizeBlobRatStims_General_morphs(fnames, imdir, outdir);
+sprintf('FINISHED. Output saved to dir: %s', outdir)
 
 
 
