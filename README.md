@@ -30,13 +30,13 @@ Instructions go here.
 5.  Sample morphs from step 2 using constraints specified in step 1.
 
 
-		a.  Use pixel-space to approximately sample equivalent intervals between morphs. This is easily done using the python script and desired option flag:
+	a.  Use pixel-space to approximately sample equivalent intervals between morphs. This is easily done using the python script and desired option flag:
 
 
 		python sample_morphs.py --output-path='/path/to/samples' --input-path='/path/to/source/images' --nmorphs=N --method='euclid'
 
 
-		b.  Use V1-features instead.  This should be done in MATLAB since it uses the hmaxMatlab module.
+	b.  Use V1-features instead.  This should be done in MATLAB since it uses the hmaxMatlab module.
 
 
 		sample_V1_features_pcorr.m, or
