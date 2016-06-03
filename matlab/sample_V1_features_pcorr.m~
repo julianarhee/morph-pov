@@ -29,32 +29,32 @@ fnames = sort_nat(fnames);
 first_im = load([source_root, fnames{1}]);
 first_feature_vect = first_im.featureVector';  % just need 1st column of corr mat
 
-chunk_size = 5;
-
-start_idx = 1;
-last_idx = chunk_size;
-nchunks = floor(length(fnames)/chunk_size);
+% chunk_size = 5;
+% 
+% start_idx = 1;
+% last_idx = chunk_size;
+% nchunks = floor(length(fnames)/chunk_size);
     
 corr_vect = [];
-
+curr_vect_idx = 2;
 while 1
 % for c=1:nchunks+1 %-1
 % for c=251:nchunks+100 %-1   
 %     sprintf('current chunk: %i', c)
     
     %start IDX: 4732, end IDX: 4751
-    F = [];
-    if (length(fnames) - last_idx) < chunk_size
-        fprintf('including the last images in this chunk!')
-        last_idx = length(fnames);
-    end
+%     F = [];
+%     if (length(fnames) - last_idx) < chunk_size
+%         fprintf('including the last images in this chunk!')
+%         last_idx = length(fnames);
+%     end
+%     
     
-    
-    sprintf('start IDX: %i, end IDX: %i', start_idx, last_idx)
-    for i=start_idx:last_idx
-        curr_im = load([source_root, fnames{i}]);
-        F = [F curr_im.featureVector'];
-    end
+%     sprintf('start IDX: %i, end IDX: %i', start_idx, last_idx)
+%     for i=start_idx:last_idx
+%         curr_im = load([source_root, fnames{i}]);
+%         F = [F curr_im.featureVector'];
+%     end
     
     F(:,1) = first_feature_vect;
     

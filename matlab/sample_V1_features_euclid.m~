@@ -3,10 +3,9 @@ close all
 
 
 source_root='/home/juliana/Documents/projects/morphs/V1_feature_morphs/';
-out_root='/home/juliana/Documents/projects/morphs/V1_feature_samples_pcorr/';
+out_root='/home/juliana/Documents/projects/morphs/V1_feature_samples_euclid/';
 
 im_root='/home/juliana/Documents/projects/morphs/morph5000_gray/';
-
 
 base_dir = '/home/juliana/Documents/projects/morphs/';
 
@@ -27,45 +26,49 @@ fnames = sort_nat(fnames);
 % from "start" (image 1 in morph series, object A)) to "end" (last image, object B).
 
 first_im = load([source_root, fnames{1}]);
-first_feature_vect = first_im.featureVector';  % just need 1st column of corr mat
+first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
-chunk_size = 5;
+% chunk_size = 5;
 
-start_idx = 1;
-last_idx = chunk_size;
-nchunks = floor(length(fnames)/chunk_size);
-    
-corr_vect = [];
-
+% start_idx = 1;
+% last_idx = chunk_size;
+% nchunks = floor(length(fnames)/chunk_size);
+%     
+% corr_vect = [];
+curr_vect_idx = 2;
+distance_vect = [];
 while 1
 % for c=1:nchunks+1 %-1
 % for c=251:nchunks+100 %-1   
 %     sprintf('current chunk: %i', c)
     
     %start IDX: 4732, end IDX: 4751
-    F = [];
-    if (length(fnames) - last_idx) < chunk_size
-        fprintf('including the last images in this chunk!')
-        last_idx = length(fnames);
-    end
+%     F = [];
+%     if (length(fnames) - last_idx) < chunk_size
+%         fprintf('including the last images in this chunk!')
+%         last_idx = length(fnames);
+%     end
+%     
+%     
+%     sprintf('start IDX: %i, end IDX: %i', start_idx, last_idx)
+%     for i=start_idx:last_idx
+%         curr_im = load([source_root, fnames{i}]);
+%         F = [F curr_im.featureVector'];
+%     end
+%     
+%     F(:,1) = first_feature_vect;
+%     
+%     pcorr_mat = corr(F);
+%     all_corrs = pcorr_mat(:,1);
+
+    curr_vect = load([source_root, fnames{curr_vect_idx}]);
+    D = norm(first_feature_vect - curr_vect.featureVector);
+    distance_vect = [distance_vect; D];
     
-    
-    sprintf('start IDX: %i, end IDX: %i', start_idx, last_idx)
-    for i=start_idx:last_idx
-        curr_im = load([source_root, fnames{i}]);
-        F = [F curr_im.featureVector'];
-    end
-    
-    F(:,1) = first_feature_vect;
-    
-    pcorr_mat = corr(F);
-    all_corrs = pcorr_mat(:,1);
-    
-    corr_vect = [corr_vect; all_corrs];
-    
-    start_idx = last_idx;
-    last_idx = last_idx + chunk_size - 1;
-    
+%     start_idx = last_idx;
+%     last_idx = last_idx + chunk_size - 1;
+
+    curr_vect_idx = curr_vect_idx + 1;
 %     current chunk: 263
 % 
 %     including the last images in this chunk!
@@ -74,7 +77,7 @@ while 1
 %     start IDX: 4979, end IDX: 5002
 
 
-    if last_idx==length(fnames)
+    if curr_vect_idx>length(fnames)
         break;
     end
 
@@ -82,13 +85,13 @@ end
 
 % with extra1's, lengh(corr_vect)=5264
 
-remove_idxs = corr_vect == 1;     % find all repeated corrs of first vector
-remove_idxs(1) = 0;               % obviously keep first vector
-corr_vect(remove_idxs) = [];      % get rid of the rest
+% remove_idxs = corr_vect == 1;     % find all repeated corrs of first vector
+% remove_idxs(1) = 0;               % obviously keep first vector
+% corr_vect(remove_idxs) = [];      % get rid of the rest
 
 % save this, bec it takes forever to make...
-save([base_dir,sprintf('V1_features_pcorr_%s.mat', num2str(length(corr_vect)))], ...
-    'corr_vect', 'fnames', 'first_feature_vect')
+save([base_dir,sprintf('V1_features_euclid_%s.mat', num2str(length(fnames)))], ...
+    'distance_vect', 'fnames', 'first_feature_vect', source_root, )
 
 %%
 % Test first x images to make sure corr_vect has the right stuff...
