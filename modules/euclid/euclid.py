@@ -22,7 +22,7 @@ import scipy.spatial
 #     import Image
 # except:
 #     from PIL import Image
-# import numpy as np
+import numpy as np
 import re
 import matplotlib.pyplot as plt
 
@@ -60,7 +60,24 @@ def copy_file(src, dest):
         print('Error: %s' % e.strerror)
 
 
-def get_pairwise_diffs(im_mat):
+# def get_pairwise_diffs(im_mat):
+
+#     '''
+    
+#     Each row is an unraveled image. Take Euclid distance between each, over pairwise combinations.
+#     Pairs are only consecutive images (not all combinations). 
+
+#     i.e,. this assumes that the diff between x3 and x2 is smaller than the diff between x3 and x1.
+
+#     '''
+    
+#     diffs = [scipy.spatial.distance.euclidean(x[1],x[0]) for x in zip(im_mat[1:],im_mat[:-1])]
+#     cumsums = scipy.cumsum(diffs)
+
+#     return diffs, cumsums
+
+
+def get_relative_dists(im_mat):
 
     '''
     
@@ -71,10 +88,12 @@ def get_pairwise_diffs(im_mat):
 
     '''
     
-    diffs = [scipy.spatial.distance.euclidean(x[1],x[0]) for x in zip(im_mat[1:],im_mat[:-1])]
-    cumsums = scipy.cumsum(diffs)
+    first_im = im_mat[0]
 
-    return diffs, cumsums
+    dists = [[idx, scipy.spatial.distance.euclidean(first_im, vect)] for idx,vect in enumerate(im_mat)]
+    cumsums = scipy.cumsum([d[1] for d in dists])
+
+    return dists, cumsums
 
 
 def get_even_dists_euclidean(imdirectory, outdirectory, npoints, ext='.png'):
@@ -85,23 +104,40 @@ def get_even_dists_euclidean(imdirectory, outdirectory, npoints, ext='.png'):
 
     fims, im_mat = imagemat.get_imagemat_fromdir(imdirectory)
     print "IMS: ", len(fims)
-    diffs, cumsums = get_pairwise_diffs(im_mat)
-    # s = scipy.cumsum(diffs)
-    print len(cumsums)
-    # plt.figure()
-    # plt.plot(s)
-    # plt.show()
-    stp = list(spread.spread(0, cumsums[-1], npoints+1, mode=3))
-    indices = []
-    print "LEN: ", len(stp)
-    for n,interval in enumerate(stp[1:len(stp)]):
-        idx = [i for i,val in enumerate(cumsums) if (val>=interval)]
-        indices.append(idx)
-    first_match = [v[0]+1 for v in indices]
-    #usethese = s[first_match]
-    #morphids = [i for i,csum in enumerate(s) if csum==usethese[0]
-    first_match.extend([0])
-    morphids = sorted(first_match)
+
+    # diffs, cumsums = get_pairwise_diffs(im_mat)
+    dists, cumsums = get_relative_dists(im_mat)
+
+    dist_vals = np.array([d[1] for d in dists])
+    idxs = []
+    stp = list(spread.spread(dist_vals[0], dist_vals[-1], npoints+1, mode=3))
+    for n,curr_bin in enumerate(stp):
+        print n
+        sample_idx = np.where(dist_vals == min(dist_vals, key=lambda x: abs(float(x) - curr_bin)))[0][0]
+        idxs.append(sample_idx)
+
+
+    # # s = scipy.cumsum(diffs)
+    # print len(cumsums)
+    # # plt.figure()
+    # # plt.plot(s)
+    # # plt.show()
+    # # stp = list(spread.spread(0, cumsums[-1], npoints+1, mode=3))
+    # stp = list(spread.spread(cumsums[0], cumsums[-1], npoints+1, mode=3))
+    # indices = []
+    # print "LEN: ", len(stp)
+    # # for n,interval in enumerate(stp[1:len(stp)]):
+    # for n,interval in enumerate(stp):
+    #     idx = [i for i,val in enumerate(cumsums) if (val>=interval)]
+    #     indices.append(idx)
+    # first_match = [v[0]+1 for v in indices]
+    # print "MORPHS: ", first_match
+    # #usethese = s[first_match]
+    # #morphids = [i for i,csum in enumerate(s) if csum==usethese[0]
+    # first_match.extend([0])
+    # morphids = sorted(first_match)
+
+    morphids = idxs
     for x in morphids:
         print x, all_impaths[x]
     morphseq = [all_impaths[int(x)] for x in morphids]
@@ -118,47 +154,92 @@ def get_even_dists_euclidean(imdirectory, outdirectory, npoints, ext='.png'):
         morphname = os.path.join(outdirectory,morphname)
         os.rename(morphname, morphname.replace(old, str(idx)))
 
-    return diffs, cumsums
+    return dists, cumsums, morphids
 
 
-def plot_euclidean(imdirectory, distances, cumsumd, show_plot=True):
+def plot_euclidean(imdirectory, distances, cumsumd, morphids, show_plot=True):
+
+    # plt.figure()
+    # plt.plot(distances)
 
     plt.figure()
+    plt.subplot(1,2,1)
     plt.plot(distances)
-    plt.ylabel('euclidean distance between sampled images')
-    plt.xlabel('image number')
+
+    plt.ylabel('euclidean distance between all images')
+    plt.xlabel('im #')
     plt.title('Euclidian Distance')
 
-    imname = 'euclidian_distance'
+    # imname = 'euclidian_distance'
     figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
-
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
 
+    # impath = os.path.join(figdir, imname+'.jpg')
+    # plt.savefig(impath, format='jpg')
+    # plt.show()
+    # print impath
 
-    impath = os.path.join(figdir, imname+'.jpg')
-    plt.savefig(impath, format='jpg')
-
-    if plot:
-        plt.show()
-
-    print impath
-
-    plt.figure()
+    plt.subplot(1,2,2)
     plt.plot(cumsumd)
-    plt.title('Cum Sum of Distances')
-    plt.show()
+    plt.title('Cum Sum of all distances')
 
-    imname = 'cumsum_distances'
+    imname = 'cumsum_euclid_distance'
     basedir = os.path.split(imdirectory)[0]
     impath = os.path.join(basedir, 'figures', imname+'.jpg')
     plt.savefig(impath, format='jpg')
 
-    if plot:
-        plt.show()
-        
+    plt.show()
     print impath
+
+
+    # plt.figure()
+
+    A = [distances[i][1] for i in morphids]
+    B = range(len(A))
+    Z = morphids
+
+    fig, ax = plt.subplots()
+    ax.plot(B, A, 'r*-')
+    for a, b, z in zip(B, A, Z):
+        # Annotate the points 5 _points_ above and to the left of the vertex
+        ax.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+                    textcoords='offset points')
+
+    plt.title('Sampled Euclidean distances')
+
+    imname = 'sampled_euclid_distances'
+    basedir = os.path.split(imdirectory)[0]
+    impath = os.path.join(basedir, 'figures', imname+'.jpg')
+    plt.savefig(impath, format='jpg')
+
+    plt.show()
+    print impath
+
+
+    # A = [distances[i][1] for i in morphids]
+    # B = range(len(A))
+    # Z = morphids
+
+    # fig, ax = plt.subplots()
+    # ax.plot(B, A, 'r*')
+    # for a, b, z in zip(B, A, Z):
+    #     # Annotate the points 5 _points_ above and to the left of the vertex
+    #     ax.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+    #                 textcoords='offset points')
+        
+    # plt.title('Sampled Euclidean distances')
+
+    # imname = 'sampled_euclid_distances'
+    # basedir = os.path.split(imdirectory)[0]
+    # impath = os.path.join(basedir, 'figures', imname+'.jpg')
+    # plt.savefig(impath, format='jpg')
+
+    # plt.show()
+    # print impath
+
+
 
 def run():
 
@@ -201,7 +282,7 @@ def run():
 
     dists, sums = get_even_dists_euclidean(imdir, outdir, nmorphs, im_format)
 
-    plot_euclidean(imdir, dists, sums, plot)
+    plot_euclidean(imdir, dists, sums, show_plot=plot)
 
     print sums
 

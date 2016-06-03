@@ -61,6 +61,12 @@ while 1
 %     pcorr_mat = corr(F);
 %     all_corrs = pcorr_mat(:,1);
 
+    
+    if mod(curr_vect_idx, 100) == 0
+        sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
+    end
+         
+    
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     D = norm(first_feature_vect - curr_vect.featureVector); % Get Euclidean distance between vec1 and curr_vect
     distance_vect = [distance_vect; D];

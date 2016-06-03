@@ -61,8 +61,14 @@ while 1
 %     pcorr_mat = corr(F);
 %     all_corrs = pcorr_mat(:,1);
 
+    
+    if mod(curr_vect_idx, 100) == 0
+        sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx}_)
+    end
+         
+    
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
-    D = norm(first_feature_vect - curr_vect.featureVector);
+    D = norm(first_feature_vect - curr_vect.featureVector); % Get Euclidean distance between vec1 and curr_vect
     distance_vect = [distance_vect; D];
     
 %     start_idx = last_idx;
@@ -91,44 +97,46 @@ end
 
 % save this, bec it takes forever to make...
 save([base_dir,sprintf('V1_features_euclid_%s.mat', num2str(length(fnames)))], ...
-    'distance_vect', 'fnames', 'first_feature_vect', source_root, )
+    'distance_vect', 'fnames', 'first_feature_vect', 'source_root', 'im_root')
+
+fprintf('Saved .mat to: %s', [base_dir,sprintf('V1_features_euclid_%s.mat', num2str(length(fnames)))])
 
 %%
 % Test first x images to make sure corr_vect has the right stuff...
-Fs = [];
-x = 20;
-for i=1:x
-    curr_im = load([source_root, fnames{i}]);
-    Fs = [Fs curr_im.featureVector'];
-end
-pcorr_mat = corr(F);
-check_vect = pcorr_mat(:,1);
-
-so_true = check_vect==corr_vect;
+% Fs = [];
+% x = 20;
+% for i=1:x
+%     curr_im = load([source_root, fnames{i}]);
+%     Fs = [Fs curr_im.featureVector'];
+% end
+% pcorr_mat = corr(F);
+% check_vect = pcorr_mat(:,1);
+% 
+% so_true = check_vect==corr_vect;
 
 %% Get linearly-spaced samples
 
-nmorphs = 20;
-lin_samples = linspace(min(corr_vect), max(corr_vect), nmorphs+2); % add 2 to account for anchors
-
-sample_idxs = [];
-for i=1:length(lin_samples)
-    [c index] = min(abs(corr_vect-lin_samples(i)))
-    sample_idxs = [sample_idxs; index];
-end
-
-% and save them...
-
-im_info = dir([im_root,'*.png']);
-im_names = cell(1, length(im_info));
-for i=1:length(im_info)
-    im_names{i} = im_nifo(i).name;
-end
-im_names = sort_nat(im_names);
-
-for i=1:length(sample_idxs)
-   curr_sample_idx = sample_idxs(i)(2);
-   
-   curr_sample = im_names(curr_sample_idx);
-   copyfile(['im_root', curr_sample], ['out_root', curr_sample]);
-end
+% nmorphs = 20;
+% lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
+% 
+% sample_idxs = [];
+% for i=1:length(lin_samples)
+%     [c index] = min(abs(distance_vect-lin_samples(i)))
+%     sample_idxs = [sample_idxs; index];
+% end
+% 
+% % and save them...
+% 
+% im_info = dir([im_root,'*.png']);
+% im_names = cell(1, length(im_info));
+% for i=1:length(im_info)
+%     im_names{i} = im_nifo(i).name;
+% end
+% im_names = sort_nat(im_names);
+% 
+% for i=1:length(sample_idxs)
+%    curr_sample_idx = sample_idxs(i)(2);
+%    
+%    curr_sample = im_names(curr_sample_idx);
+%    copyfile(['im_root', curr_sample], ['out_root', curr_sample]);
+% end
