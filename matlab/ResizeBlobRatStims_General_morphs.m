@@ -50,27 +50,38 @@ IdxImg = 1;
 %         '_z',  num2str(RangeLight_Z(LightPos)), '.png'];
 %     
     % Loop on all stimuli
-    for Stim = 1:length(fnames)
+    while 1
 %         BaseName = ['Blob_', num2str(Stim) ,'_CamRot_y'];
         % Loop on all ViewPoints
 %         for v_y = RangeView_y 
 %             for v_x = RangeView_x
 
-                % Load image at right viewpoint
-                Image2Load = [imdir, fnames{Stim}];
-                [img map] = imread( Image2Load );
+        if mod(IdxImg, 100) == 0
+            sprintf('Loading image: %s', fnames{IdxImg})
+        end
 
-                % Build stack matrix with all transformaitons
-                img_stack(IdxImg,:,:) = img;
+        % Load image at right viewpoint
+        Image2Load = [imdir, fnames{IdxImg}];
+        [img map] = imread( Image2Load );
 
-                IdxImg = IdxImg+1;
+        % Build stack matrix with all transformaitons
+%         img_stack(IdxImg,:,:) = img;
+        img_stack = img_stack + img;
+
+        IdxImg = IdxImg+1;
+
+        if IdxImg > length(fnames)
+            break;
+        end
 %             end; %for v_x
 %         end; %for v_y
     end; %for Stim
 % end; %for LightPos
 
 %  img_av = uint8( squeeze( mean(img_stack,1) ) );
-img_av = uint8( squeeze( sum(img_stack,1) ) );
+% img_av = uint8( squeeze( sum(img_stack,1) ) );
+img_av = uint8( squeeze( img_stack ) );
+
 figure;
 image(img_av);
 map=gray(256);
