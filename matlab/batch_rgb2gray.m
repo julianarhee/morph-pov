@@ -2,8 +2,8 @@ clear all
 close all
 
 
-source_root='/home/juliana/Documents/projects/morphs/morph5000/im/';
-out_root='/home/juliana/Documents/projects/morphs/morph5000_gray/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/im/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray/';
 
 if ~isdir(out_root)
     mkdir(out_root)

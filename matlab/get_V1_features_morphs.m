@@ -3,10 +3,11 @@ close all
 
 % get V1 features for a group of images
 
-addpath('/home/juliana/Documents/MATLAB/hmaxMatlab')
+addpath('./hmaxMatlab')
+addpath('./helpers')
 
-source_root='/home/juliana/Documents/projects/morphs/morph5000_gray/';
-out_root='/home/juliana/Documents/projects/morphs/V1_feature_morphs/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray/';
 
 if ~isdir(out_root)
     mkdir(out_root)
