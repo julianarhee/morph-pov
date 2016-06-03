@@ -43,39 +43,45 @@ FlagPlotBoundaries = 1;
 
 
 % =========== Find the boundaries of the image resulting from averaging all views of both stimuli ===========
-IdxImg = 1;
+% IdxImg = 1;
 % Loop on position of the light source
 % for LightPos = 1:length(RangeLight_X)
 %     SuffixName = ['_LighPos_x', num2str(RangeLight_X(LightPos)), '_y', num2str(RangeLight_Y(LightPos)), ...
 %         '_z',  num2str(RangeLight_Z(LightPos)), '.png'];
 %     
     % Loop on all stimuli
-    while 1
+
+IdxImg = 1;  
+Image2Load = [imdir, fnames{IdxImg}];
+[img map] = imread( Image2Load );
+img_stack = img; % create mat stack to add subsequent images to
+IdxImg = IdxImg+1;
+while 1
 %         BaseName = ['Blob_', num2str(Stim) ,'_CamRot_y'];
-        % Loop on all ViewPoints
+    % Loop on all ViewPoints
 %         for v_y = RangeView_y 
 %             for v_x = RangeView_x
 
-        if mod(IdxImg, 100) == 0
-            sprintf('Loading image: %s', fnames{IdxImg})
-        end
+    if mod(IdxImg, 100) == 0
+        sprintf('Loading image: %s', fnames{IdxImg})
+    end
 
-        % Load image at right viewpoint
-        Image2Load = [imdir, fnames{IdxImg}];
-        [img map] = imread( Image2Load );
+    % Load image at right viewpoint
+    Image2Load = [imdir, fnames{IdxImg}];
+    [img map] = imread( Image2Load );
 
-        % Build stack matrix with all transformaitons
+    % Build stack matrix with all transformaitons
 %         img_stack(IdxImg,:,:) = img;
-        img_stack = img_stack + img;
+    img_stack = img_stack + img;
 
-        IdxImg = IdxImg+1;
+    IdxImg = IdxImg+1;
 
-        if IdxImg > length(fnames)
-            break;
-        end
+    if IdxImg > length(fnames)
+        break;
+    end
 %             end; %for v_x
 %         end; %for v_y
-    end; %for Stim
+end; %for Stim
 % end; %for LightPos
 
 %  img_av = uint8( squeeze( mean(img_stack,1) ) );
