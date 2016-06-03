@@ -20,7 +20,7 @@
 %
 % ######################################################################################################################
 
-function ResizeBlobRatStims_General
+function ResizeBlobRatStims_General(fnames, imdir, outdir)
 
 FlagPlotBoundaries = 1;
 
