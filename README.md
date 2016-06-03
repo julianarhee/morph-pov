@@ -1,6 +1,7 @@
-# Basic Setup
-Instructions go here.
+Pipeline for generating morph continuum from two stimuli (object A and B). This assumes that objects were created in POVray. It first generates a large set of stimuli that morph from object A to B, using POVray. It then converts to grayscale and rescales so that all stimuli are centered with roughly the same dimensions. Finally, it allows even sampling of morphs from the large set using various methods to define the sampling interval.
 
+
+# Basic Setup
 
 
 1.  Install modules.  For each:
