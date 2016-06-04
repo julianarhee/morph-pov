@@ -2,8 +2,8 @@ clear all
 close all
 
 
-imdir='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray/';
-outdir='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray_resize/';
+imdir='/nas/volume1/behavior/stimuli/pnas_morphs/morph5000_gray/';
+outdir='/nas/volume1/behavior/stimuli/pnas_morphs/morph5000_gray_resize/';
 
 
 if ~isdir(outdir)
