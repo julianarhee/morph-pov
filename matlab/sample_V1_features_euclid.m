@@ -35,7 +35,7 @@ first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 % nchunks = floor(length(fnames)/chunk_size);
 %     
 % corr_vect = [];
-curr_vect_idx = 2;
+curr_vect_idx = 1;
 distance_vect = [];
 while 1
 % for c=1:nchunks+1 %-1

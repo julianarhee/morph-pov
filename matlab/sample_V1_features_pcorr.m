@@ -65,7 +65,7 @@ while 1
     
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     
-    pcorr = corr(first_feature_vect, curr_vect.featureVector);
+    pcorr = corr(first_feature_vect', curr_vect.featureVector');
 %     all_corrs = pcorr_mat(:,1);
     
     corr_vect = [corr_vect; pcorr];
@@ -108,7 +108,7 @@ for i=1:x
     curr_im = load([source_root, fnames{i}]);
     Fs = [Fs curr_im.featureVector'];
 end
-pcorr_mat = corr(F);
+pcorr_mat = corr(Fs);
 check_vect = pcorr_mat(:,1);
 
 so_true = check_vect==corr_vect;
@@ -118,27 +118,32 @@ save([base_dir,sprintf('V1_features_pcorr_%s.mat', num2str(length(corr_vect)))],
 
 %% Get linearly-spaced samples
 
-% nmorphs = 20;
+nmorphs = 20;
 % lin_samples = linspace(min(corr_vect), max(corr_vect), nmorphs+2); % add 2 to account for anchors
-% 
-% sample_idxs = [];
-% for i=1:length(lin_samples)
-%     [c index] = min(abs(corr_vect-lin_samples(i)))
-%     sample_idxs = [sample_idxs; index];
-% end
+lin_samples = linspace(corr_vect(1), corr_vect(end), nmorphs+2);
+
+sample_idxs = [];
+for i=1:length(lin_samples)
+    [c index] = min(abs(corr_vect-lin_samples(i)))
+    sample_idxs = [sample_idxs; index];
+end
 % 
 % % and save them...
 % 
-% im_info = dir([im_root,'*.png']);
-% im_names = cell(1, length(im_info));
-% for i=1:length(im_info)
-%     im_names{i} = im_nifo(i).name;
-% end
-% im_names = sort_nat(im_names);
+im_info = dir([im_root,'*.png']);
+im_names = cell(1, length(im_info));
+for i=1:length(im_info)
+    im_names{i} = im_info(i).name;
+end
+im_names = sort_nat(im_names);
 % 
-% for i=1:length(sample_idxs)
-%    curr_sample_idx = sample_idxs(i)(2);
-%    
-%    curr_sample = im_names(curr_sample_idx);
-%    copyfile(['im_root', curr_sample], ['out_root', curr_sample]);
-% end
+for i=1:length(sample_idxs)
+   curr_sample_idx = sample_idxs(i);
+   
+   curr_sample = im_names(curr_sample_idx)
+   src = strcat(im_root, curr_sample);
+   src = src{1};
+   dest = strcat(out_root, curr_sample);
+   dest = dest{1}
+   copyfile(src, dest);
+end
