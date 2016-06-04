@@ -67,7 +67,7 @@ while 1
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     next_vect = load([source_root, fnames{next_vect_idx}]);
     
-    pcorr = corr(cur_vect.featureVector', next_vect.featureVector');
+    pcorr = corr(curr_vect.featureVector', next_vect.featureVector');
 %     all_corrs = pcorr_mat(:,1);
     
     corr_vect = [corr_vect; pcorr];
