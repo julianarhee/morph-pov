@@ -35,7 +35,7 @@ while 1
     
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     next_vect = load([source_root, fnames{next_vect_idx}]);
-    
+
     D = norm(curr_vect.featureVector'-next_vect.featureVector'); % Get Euclidean distance between vec1 and curr_vect
     distance_vect = [distance_vect; D];
 
