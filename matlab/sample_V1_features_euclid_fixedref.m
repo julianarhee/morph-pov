@@ -3,7 +3,7 @@ close all
 
 
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_samples_euclid_neighbor/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_samples_euclid_fixedref/';
 
 im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray_resize/';
 
@@ -21,38 +21,38 @@ for i=1:length(finfo)
 end
 fnames = sort_nat(fnames);
 
+% can't load all 5k feature vectors, so get correlations in chunks:
+% only need col 1 of the correlation matrix, since just want linear steps
+% from "start" (image 1 in morph series, object A)) to "end" (last image, object B).
+
+first_im = load([source_root, fnames{1}]);
+first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
 curr_vect_idx = 1;
-next_vect_idx = curr_vect_idx + 1;
-
 distance_vect = [];
 while 1
 
     if mod(curr_vect_idx, 100) == 0
-        sprintf('calculating correlation between %s and %s', fnames{curr_vect_idx}, fnames{next_vect_idx})
+        sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
     end
          
-    
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
-    next_vect = load([source_root, fnames{next_vect_idx}]);
-    
-    D = norm(curr_vect.featureVector'-next_vect.featureVector'); % Get Euclidean distance between vec1 and curr_vect
+    D = norm(first_feature_vect - curr_vect.featureVector); % Get Euclidean distance between vec1 and curr_vect
     distance_vect = [distance_vect; D];
 
     curr_vect_idx = curr_vect_idx + 1;
-    next_vect_idx = curr_vect_idx + 1;
 
-    if curr_vect_idx==length(fnames)
+    if curr_vect_idx>length(fnames)
         break;
     end
 
 end
 
 % save this, bec it takes forever to make...
-save([base_dir,sprintf('V1features_euclid_neighbor_%s.mat', num2str(length(fnames)))], ...
-    'distance_vect', 'fnames', 'source_root', 'im_root')
+save([base_dir,sprintf('V1features_euclid_fixedref_%s.mat', num2str(length(fnames)))], ...
+    'distance_vect', 'fnames', 'first_feature_vect', 'source_root', 'im_root')
 
-fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_euclid_neighbor_%s.mat', num2str(length(fnames)))])
+fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_euclid_fixedref_%s.mat', num2str(length(fnames)))])
 
 %%
 % Test first x images to make sure corr_vect has the right stuff...
@@ -70,14 +70,11 @@ fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_euclid_neighbor_%s.ma
 %% Get linearly-spaced samples
 
 nmorphs = 20;
-cumsum_total = cumsum(distance_vect);
-start_point = cumsum_total(1);
-end_point = cumsum_total(end);
-lin_samples = linspace(start_point, end_point, nmorphs+2);
+lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
 
 sample_idxs = [];
 for i=1:length(lin_samples)
-    [c index] = min(abs(cumsum_total-lin_samples(i)))
+    [c index] = min(abs(distance_vect-lin_samples(i)))
     sample_idxs = [sample_idxs; index];
 end
 
@@ -96,9 +93,7 @@ for i=1:length(sample_idxs)
    curr_sample = im_names(curr_sample_idx)
    src = strcat(im_root, curr_sample);
    src = src{1};
-   dest = strcat(out_root, sprintf('morph%i.png', i-1));
-%    dest = dest{1}
+   dest = strcat(out_root, curr_sample);
+   dest = dest{1}
    copyfile(src, dest);
 end
-save([base_dir,sprintf('V1features_euclid_neighbor_%s.mat', num2str(length(fnames)))], ...
-    'cumsum_total', 'sample_idxs', '-append')

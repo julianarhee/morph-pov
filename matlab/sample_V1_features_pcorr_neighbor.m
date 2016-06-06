@@ -3,7 +3,7 @@ close all
 
 
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize_samples_pcorr_neighbor/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_samples_pcorr_neighbor/';
 
 im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray_resize/';
 
@@ -21,68 +21,26 @@ for i=1:length(finfo)
     fnames{i} = finfo(i).name;
 end
 fnames = sort_nat(fnames);
-
-% can't load all 5k feature vectors, so get correlations in chunks:
-% only need col 1 of the correlation matrix, since just want linear steps
-% from "start" (image 1 in morph series, object A)) to "end" (last image, object B).
-
-% first_im = load([source_root, fnames{1}]);
-% first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
-
-% chunk_size = 5;
-% 
-% start_idx = 1;
-% last_idx = chunk_size;
-% nchunks = floor(length(fnames)/chunk_size);
     
 corr_vect = [];
 curr_vect_idx = 1;
 next_vect_idx = curr_vect_idx + 1;
 while 1
-% for c=1:nchunks+1 %-1
-% for c=251:nchunks+100 %-1   
-%     sprintf('current chunk: %i', c)
-    
-    %start IDX: 4732, end IDX: 4751
-%     F = [];
-%     if (length(fnames) - last_idx) < chunk_size
-%         fprintf('including the last images in this chunk!')
-%         last_idx = length(fnames);
-%     end
-%     
-    
-%     sprintf('start IDX: %i, end IDX: %i', start_idx, last_idx)
-%     for i=start_idx:last_idx
-%         curr_im = load([source_root, fnames{i}]);
-%         F = [F curr_im.featureVector'];
-%     end
-    
-%     F(:,1) = first_feature_vect;
 
     if mod(curr_vect_idx, 100) == 0
         sprintf('calculating correlation between %s and %s', fnames{curr_vect_idx}, fnames{next_vect_idx})
     end
         
-    
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
     next_vect = load([source_root, fnames{next_vect_idx}]);
     
     pcorr = corr(curr_vect.featureVector', next_vect.featureVector');
-%     all_corrs = pcorr_mat(:,1);
-    
+
     corr_vect = [corr_vect; pcorr];
     
-%     start_idx = last_idx;
-%     last_idx = last_idx + chunk_size - 1;
+
     curr_vect_idx = curr_vect_idx + 1;
     next_vect_idx = curr_vect_idx + 1;
-%     current chunk: 263
-% 
-%     including the last images in this chunk!
-%     ans =
-% 
-%     start IDX: 4979, end IDX: 5002
-
 
     if curr_vect_idx==length(fnames)
         break;
@@ -90,17 +48,11 @@ while 1
 
 end
 
-% with extra1's, lengh(corr_vect)=5264, chunk = 20
-% with extra1's, length(corr_vect) = 6251, chunk = 5
-
-% remove_idxs = corr_vect == 1;     % find all repeated corrs of first vector
-% remove_idxs(1) = 0;               % obviously keep first vector
-% corr_vect(remove_idxs) = [];      % get rid of the rest
 
 % save this, bec it takes forever to make...
-save([base_dir,sprintf('V1_features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))], ...
-    'corr_vect', 'fnames', 'first_feature_vect')
-fprintf('Saved .mat to: %s', [base_dir,sprintf('V1_features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))])
+save([base_dir,sprintf('V1features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))], ...
+    'corr_vect', 'fnames')
+fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))])
 
 
 %%
@@ -182,7 +134,9 @@ for i=1:length(sample_idxs)
    curr_sample = im_names(curr_sample_idx)
    src = strcat(im_root, curr_sample);
    src = src{1};
-   dest = strcat(out_root, curr_sample);
-   dest = dest{1}
+   dest = strcat(out_root, sprintf('morph%i.png', i-1));
+%    dest = dest{1}
    copyfile(src, dest);
 end
+save([base_dir,sprintf('V1features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))], ...
+    'cumsum_total', 'sample_idxs', '-append')

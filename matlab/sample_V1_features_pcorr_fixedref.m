@@ -1,11 +1,10 @@
 clear all
 close all
 
-
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize_samples_euclid/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_samples_euclid_fixedref/';
 
-im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000_gray_resize/';
+im_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
 
 base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/';
 
@@ -29,77 +28,37 @@ first_im = load([source_root, fnames{1}]);
 first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
 % chunk_size = 5;
-
+% 
 % start_idx = 1;
 % last_idx = chunk_size;
 % nchunks = floor(length(fnames)/chunk_size);
-%     
-% corr_vect = [];
+    
+corr_vect = [];
 curr_vect_idx = 1;
-distance_vect = [];
 while 1
-% for c=1:nchunks+1 %-1
-% for c=251:nchunks+100 %-1   
-%     sprintf('current chunk: %i', c)
-    
-    %start IDX: 4732, end IDX: 4751
-%     F = [];
-%     if (length(fnames) - last_idx) < chunk_size
-%         fprintf('including the last images in this chunk!')
-%         last_idx = length(fnames);
-%     end
-%     
-%     
-%     sprintf('start IDX: %i, end IDX: %i', start_idx, last_idx)
-%     for i=start_idx:last_idx
-%         curr_im = load([source_root, fnames{i}]);
-%         F = [F curr_im.featureVector'];
-%     end
-%     
-%     F(:,1) = first_feature_vect;
-%     
-%     pcorr_mat = corr(F);
-%     all_corrs = pcorr_mat(:,1);
 
-    
     if mod(curr_vect_idx, 100) == 0
         sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
     end
-         
+        
     
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
-    D = norm(first_feature_vect - curr_vect.featureVector); % Get Euclidean distance between vec1 and curr_vect
-    distance_vect = [distance_vect; D];
     
-%     start_idx = last_idx;
-%     last_idx = last_idx + chunk_size - 1;
-
-    curr_vect_idx = curr_vect_idx + 1;
-%     current chunk: 263
-% 
-%     including the last images in this chunk!
-%     ans =
-% 
-%     start IDX: 4979, end IDX: 5002
-
-
+    pcorr = corr(first_feature_vect', curr_vect.featureVector');
+    
+    corr_vect = [corr_vect; pcorr];
+    
     if curr_vect_idx>length(fnames)
         break;
     end
 
 end
 
-% with extra1's, lengh(corr_vect)=5264
-
-% remove_idxs = corr_vect == 1;     % find all repeated corrs of first vector
-% remove_idxs(1) = 0;               % obviously keep first vector
-% corr_vect(remove_idxs) = [];      % get rid of the rest
-
 % save this, bec it takes forever to make...
-save([base_dir,sprintf('V1_features_euclid_%s.mat', num2str(length(fnames)))], ...
-    'distance_vect', 'fnames', 'first_feature_vect', 'source_root', 'im_root')
+save([base_dir,sprintf('V1features_pcorr_fixedref_%s.mat', num2str(length(corr_vect)))], ...
+    'corr_vect', 'fnames', 'first_feature_vect')
+fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_pcorr_fixedref_%s.mat', num2str(length(corr_vect)))])
 
-fprintf('Saved .mat to: %s', [base_dir,sprintf('V1_features_euclid_%s.mat', num2str(length(fnames)))])
 
 %%
 % Test first x images to make sure corr_vect has the right stuff...
@@ -109,31 +68,36 @@ fprintf('Saved .mat to: %s', [base_dir,sprintf('V1_features_euclid_%s.mat', num2
 %     curr_im = load([source_root, fnames{i}]);
 %     Fs = [Fs curr_im.featureVector'];
 % end
-% pcorr_mat = corr(F);
+% pcorr_mat = corr(Fs);
 % check_vect = pcorr_mat(:,1);
 % 
 % so_true = check_vect==corr_vect;
+% 
+% save([base_dir,sprintf('V1features_pcorr_fixed_ref%s.mat', num2str(length(corr_vect)))], ...
+%     'check_vect', '-append')
 
 %% Get linearly-spaced samples
 
 nmorphs = 20;
-lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
+% lin_samples = linspace(min(corr_vect), max(corr_vect), nmorphs+2); % add 2 to account for anchors
+lin_samples = linspace(corr_vect(1), corr_vect(end), nmorphs+2);
 
+% Get indices into stimulus bank (im_root):
 sample_idxs = [];
 for i=1:length(lin_samples)
-    [c index] = min(abs(distance_vect-lin_samples(i)))
+    [c index] = min(abs(corr_vect-lin_samples(i)))
     sample_idxs = [sample_idxs; index];
 end
 
-% % and save them...
-% 
 im_info = dir([im_root,'*.png']);
 im_names = cell(1, length(im_info));
 for i=1:length(im_info)
     im_names{i} = im_info(i).name;
 end
 im_names = sort_nat(im_names);
-% 
+
+
+% and save them...
 for i=1:length(sample_idxs)
    curr_sample_idx = sample_idxs(i);
    
