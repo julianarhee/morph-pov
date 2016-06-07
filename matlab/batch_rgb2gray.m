@@ -2,8 +2,8 @@ clear all
 close all
 
 
-source_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph5000/im/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph5000_gray/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/pov20/im/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray/';
 
 if ~isdir(out_root)
     mkdir(out_root)
