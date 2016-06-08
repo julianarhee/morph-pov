@@ -3,7 +3,7 @@ close all
 
 
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_samples_pcorr_neighbor/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
 
 im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
 

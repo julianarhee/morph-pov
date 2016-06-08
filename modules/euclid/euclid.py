@@ -33,6 +33,7 @@ import imagemat
 import spread
 import shutil
 
+
 def key_func(afilename):
     nondigits = re.compile("\D")
     return int(nondigits.sub("", afilename))
@@ -77,14 +78,29 @@ def copy_file(src, dest):
 #     return diffs, cumsums
 
 
-def get_relative_dists(im_mat):
+def get_dists_neighbor(im_mat):
 
     '''
     
-    Each row is an unraveled image. Take Euclid distance between each, over pairwise combinations.
-    Pairs are only consecutive images (not all combinations). 
+    Each row is an unraveled image. Take Euclid distance n and n+1.
 
-    i.e,. this assumes that the diff between x3 and x2 is smaller than the diff between x3 and x1.
+    i.e,. this computes distance between each sequential image. Uses cumsum of all distances to sample.
+
+    '''
+
+    dists = [[i, scipy.spatial.distance.euclidean(im_mat[i], im_mat[i+1])] for i,vect in enumerate(im_mat[0:-1])]
+    cumsums = scipy.cumsum([d[1] for d in dists])
+
+    return dists, cumsums
+
+
+def get_dists_fixedref(im_mat):
+
+    '''
+    
+    Each row is an unraveled image. Take Euclid distance between FIRST image and each subsequent image.
+
+    i.e,. this holds a fixed reference point for each calculated distance.
 
     '''
     
@@ -96,7 +112,7 @@ def get_relative_dists(im_mat):
     return dists, cumsums
 
 
-def get_even_dists_euclidean(imdirectory, outdirectory, npoints, ext='.png'):
+def get_even_dists_euclidean(imdirectory, outdirectory, npoints, fixedref=False, ext='.png'):
     # Get image paths for all ims -- sample from this bank:
 
     all_ims = sorted([f for f in os.listdir(imdirectory) if f.endswith(ext)], key=key_func)
@@ -106,15 +122,28 @@ def get_even_dists_euclidean(imdirectory, outdirectory, npoints, ext='.png'):
     print "IMS: ", len(fims)
 
     # diffs, cumsums = get_pairwise_diffs(im_mat)
-    dists, cumsums = get_relative_dists(im_mat)
+    if fixedref is True:
+        print "fixed ref..."
+        dists, cumsums = get_dists_fixedref(im_mat)
+        dist_vals = np.array([d[1] for d in dists])
+        stp = list(spread.spread(0, dist_vals[-1], npoints+1, mode=3))
+    else:
+        print "neighbors..."
+        dists, cumsums = get_dists_neighbor(im_mat)
+        dist_vals = cumsums #np.array([d[1] for d in dists])
+        stp = list(spread.spread(0, dist_vals[-1], npoints+1, mode=3))
 
-    dist_vals = np.array([d[1] for d in dists])
     idxs = []
-    stp = list(spread.spread(dist_vals[0], dist_vals[-1], npoints+1, mode=3))
+    # stp = list(spread.spread(dist_vals[0], dist_vals[-1], npoints+1, mode=3))
     for n,curr_bin in enumerate(stp):
         print n
         sample_idx = np.where(dist_vals == min(dist_vals, key=lambda x: abs(float(x) - curr_bin)))[0][0]
         idxs.append(sample_idx)
+
+    if fixedref is False: # fix interval-idxing
+        idxs = [i+1 for i in idxs[1:]]
+        idxs.append(0)
+        idxs = sorted(idxs)
 
 
     # # s = scipy.cumsum(diffs)
@@ -157,87 +186,104 @@ def get_even_dists_euclidean(imdirectory, outdirectory, npoints, ext='.png'):
     return dists, cumsums, morphids
 
 
-def plot_euclidean(imdirectory, distances, cumsumd, morphids, show_plot=True):
+def plot_all_distances(outdirectory, distances, cumsumd, morphids, fixedref=False, show_plot=True):
 
     # plt.figure()
     # plt.plot(distances)
-
-    plt.figure()
-    plt.subplot(1,2,1)
-    plt.plot(distances)
-
-    plt.ylabel('euclidean distance between all images')
-    plt.xlabel('im #')
-    plt.title('Euclidian Distance')
-
-    # imname = 'euclidian_distance'
-    figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
+    # figdir = os.path.join(os.path.split(outdirectory)[0], 'figures')
+    figdir = os.path.split(outdirectory)[0]
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
 
-    # impath = os.path.join(figdir, imname+'.jpg')
-    # plt.savefig(impath, format='jpg')
-    # plt.show()
-    # print impath
+    plt.figure()
+    plt.subplot(1,2,1)
+    plt.plot([d[1] for d in distances])
+    plt.ylabel('euclidean distance between all images')
+    plt.xlabel('im #')
+    plt.title('Euclidian Distance')
 
     plt.subplot(1,2,2)
     plt.plot(cumsumd)
     plt.title('Cum Sum of all distances')
 
-    imname = 'cumsum_euclid_distance'
-    basedir = os.path.split(imdirectory)[0]
-    impath = os.path.join(basedir, 'figures', imname+'.jpg')
+    if fixedref is True:
+        plt.suptitle('Fixed Ref')
+        imname = os.path.split(outdirectory)[1]+'_euclid_all_fixedref'
+    else:
+        plt.suptitle('Sequential neighbor distances')
+        imname = os.path.split(outdirectory)[1]+'_euclid_all_neighbor'
+
+    basedir = os.path.split(outdirectory)[0]
+    impath = os.path.join(figdir, imname+'.jpg')
     plt.savefig(impath, format='jpg')
 
-    plt.show()
+    if show_plot is True:
+        plt.show()
+
     print impath
 
 
-    # plt.figure()
+def plot_sampled_distances(outdirectory, morphids, fixedref=False, ext='.png', show_plot=True):
 
-    A = [distances[i][1] for i in morphids]
+        # plt.figure()
+    figdir = os.path.split(outdirectory)[0]
+    # ims = os.listdir(outdirectory)
+    # ims = sorted([i for i in ims if i.endswith(ext)], key=key_func)
+
+    fims, im_mat = imagemat.get_imagemat_fromdir(outdirectory)
+    distances, cumsums = get_dists_neighbor(im_mat)
+
+    A = [i[1] for i in distances]
+    B = range(len(A))
+    Z = morphids[1:]
+
+    fig, (ax1, ax2, ax3) = plt.subplots(3)
+    ax1.plot(B, A, 'r*-')
+    for a, b, z in zip(B, A, Z):
+        # Annotate the points 5 _points_ above and to the left of the vertex
+        ax1.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+                    textcoords='offset points')
+    ax1.set_title('Sampled Euclidean distances')
+
+    A = cumsums
+    B = range(len(A))
+    Z = morphids[1:]
+    ax2.plot(B, A, 'r*-')
+    for a, b, z in zip(B, A, Z):
+        # Annotate the points 5 _points_ above and to the left of the vertex
+        ax2.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+                    textcoords='offset points')
+    ax2.set_title('Cum sum of sampled')
+
+    distances_fixed, cumsums_fixed = get_dists_fixedref(im_mat)
+    A = [i[1] for i in distances_fixed]
     B = range(len(A))
     Z = morphids
 
-    fig, ax = plt.subplots()
-    ax.plot(B, A, 'r*-')
+    ax3.plot(B, A, 'r*-')
     for a, b, z in zip(B, A, Z):
         # Annotate the points 5 _points_ above and to the left of the vertex
-        ax.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+        ax3.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
                     textcoords='offset points')
+    ax3.set_title('Relative to FIRST image')
 
-    plt.title('Sampled Euclidean distances')
 
-    imname = 'sampled_euclid_distances'
-    basedir = os.path.split(imdirectory)[0]
-    impath = os.path.join(basedir, 'figures', imname+'.jpg')
+
+    if fixedref is True:
+        plt.suptitle('Fixed Ref')
+        imname = os.path.split(outdirectory)[1]+'_euclid_sampled_fixedref'
+    else:
+        imname = os.path.split(outdirectory)[1]+'_euclid_sampled_neighbor'
+        plt.suptitle('Sequential neighbor distances')
+    
+    impath = os.path.join(figdir, imname+'.jpg')
     plt.savefig(impath, format='jpg')
 
-    plt.show()
+    if show_plot is True:
+        plt.show()
     print impath
 
-
-    # A = [distances[i][1] for i in morphids]
-    # B = range(len(A))
-    # Z = morphids
-
-    # fig, ax = plt.subplots()
-    # ax.plot(B, A, 'r*')
-    # for a, b, z in zip(B, A, Z):
-    #     # Annotate the points 5 _points_ above and to the left of the vertex
-    #     ax.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
-    #                 textcoords='offset points')
-        
-    # plt.title('Sampled Euclidean distances')
-
-    # imname = 'sampled_euclid_distances'
-    # basedir = os.path.split(imdirectory)[0]
-    # impath = os.path.join(basedir, 'figures', imname+'.jpg')
-    # plt.savefig(impath, format='jpg')
-
-    # plt.show()
-    # print impath
 
 
 
@@ -261,6 +307,8 @@ def run():
                       dest="plot", default="False", help="plot distance and cumsum (don't use to just save)")
     parser.add_option('--nmorphs', action="store",
                       dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
+    parser.add_option('--fixedref', action="store_true",
+                      dest="fixedref", default="False", help="sample distance measure relative to fixed reference")
 
     (options, args) = parser.parse_args()
 
@@ -274,21 +322,23 @@ def run():
     plot = options.plot
     nmorphs = int(options.nmorphs)
 
-
+    fixedref = options.fixedref
+    print "FIXED? ", fixedref
     # tmp_ims, tmp_mat = get_imagemat_fromdir(imdir, im_format)
     # # print sys.argv[1]
     # # print sys.argv[2]
     # dists, sums = get_pairwise_diffs(tmp_mat)
 
-    dists, sums = get_even_dists_euclidean(imdir, outdir, nmorphs, im_format)
+    dists, sums, morphids = get_even_dists_euclidean(imdir, outdir, nmorphs, fixedref, im_format)
 
-    plot_euclidean(imdir, dists, sums, show_plot=plot)
+    plot_all_distances(outdir, dists, sums, morphids, fixedref, show_plot=plot)
+
+    plot_sampled_distances(outdir, morphids, fixedref, im_format, show_plot=plot)
 
     print sums
 
 
 if __name__ == '__main__':
     # imdir = '../../morphs/output/final'
-    # fmt = '.png'
 
     run()

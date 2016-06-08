@@ -28,6 +28,10 @@ import euclid as euc
 import projection as proj
 import correlation as corr
 
+def key_func(afilename):
+    nondigits = re.compile("\D")
+    return int(nondigits.sub("", afilename))
+
 
 # if __name__ == '__main__':
 
@@ -46,7 +50,11 @@ parser.add_option('--output-path', action="store",
                   dest="outdir", default="/tmp", help="output path for selected morphs")
 parser.add_option('--input-path', action="store",
                   dest="imdir", default="/tmp", help="input path of rendered morphs")
-parser.add_option('--method', action="store", dest='method', type="choice", choices=['euclid', 'project', 'corr'], default='euclid', help="sampling method, euclid | project [default: euclid]")
+parser.add_option('--method', action="store", dest='method', type="choice", choices=['euclid', 'project', 'corr', 'pov'], default='euclid', help="sampling method, euclid | project [default: euclid]")
+
+parser.add_option('--fixedref', action="store_true",
+                  dest="fixedref", default="False", help="sample distance measure relative to fixed reference")
+
 
 (options, args) = parser.parse_args()
 
@@ -60,17 +68,19 @@ nmorphs = int(options.nmorphs)
 method = options.method
 
 plot = options.plot
+fixedref = options.fixedref
 
 print "METHOD: %s" % method
 
 if method=='euclid':
 
     print "Using Euclidean distance..."
+    dists, sums, morphids = get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), fixedref, im_format)
 
-    dists, cumsumd, morphids = euc.get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), im_format)
+    euc.plot_all_distances(outdirectory, dists, sums, morphids, fixedref, show_plot=plot)
 
-    if plot:
-        euc.plot_euclidean(imdirectory, dists, cumsumd, morphids, show_plot=True)
+    euc.plot_sampled_distances(outdirectory, morphids, fixedref, im_format, show_plot=plot)
+
 
 elif method=='project':
 
@@ -78,17 +88,67 @@ elif method=='project':
 
     projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format)
     
-    if plot:
-        proj.plot_sample_projections(projs, idxs, imdirectory, show_plot=plot)
+    proj.plot_sampled_projections(outdirectory, idxs, show_plot=plot)
+    # if plot:
+        # proj.plot_sampled_projections(projs, idxs, imdirectory, show_plot=plot)
 
 elif method=='corr':
 
     print "Using correlation..."
 
-    idxs, coeffs = corr.get_sampled_morphs(nmorphs, imdirectory, outdirectory, im_format)
+    morph_idxs, morph_coeffs, all_coeffs = corr.get_sampled_morphs(imdirectory, outdirectory, nmorphs, fixedref, im_format)
 
-    if plot:
-        corr.plot_sampled_morphs(idxs, coeffs, imdirectory, show_plot=plot)
+    corr.plot_all_distances(outdirectory, all_coeffs, morph_idxs, fixedref=fixedref, show_plot=plot)
+    corr.plot_sampled_distances(outdirectory, morph_idxs, fixedref=fixedref, ext='.png', show_plot=plot)
+
+elif method=='pov':
+
+  morphs = os.listdir(outdirectory)
+  morphs = sorted([i for i in morphs if im_format in i], key=key_func)
+  morphids = range(len(morphs))
+
+
+  euc.plot_sampled_distances(outdirectory, morphids, fixedref, im_format, show_plot=plot)
+
+  corr.plot_sampled_distances(outdirectory, morphids, fixedref, im_format, show_plot=plot)
+
+  proj.plot_sampled_projections(outdirectory, morphids, show_plot=plot)
+  # print "Plotting each distance measure using INPUT: ", outdirectory
+
+  # A = [i[1] for i in coeffs]
+  # B = range(len(A))
+  # Z = morphids[1:]
+
+  # fig, (ax1, ax2, ax3) = plt.subplots(3)
+  # ax1.plot(B, A, 'r*-')
+  # for a, b, z in zip(B, A, Z):
+  #     # Annotate the points 5 _points_ above and to the left of the vertex
+  #     ax1.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+  #                 textcoords='offset points')
+  # ax1.set_title('P-correlaton between image n and n+1')
+
+  # A = scipy.cumsum([i[1] for i in coeffs])
+  # B = range(len(A))
+  # Z = morphids[1:]
+  # ax2.plot(B, A, 'r*-')
+  # for a, b, z in zip(B, A, Z):
+  #     # Annotate the points 5 _points_ above and to the left of the vertex
+  #     ax2.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+  #                 textcoords='offset points')
+  # ax2.set_title('Cum sum of sampled')
+
+  # fmorphs_fixed, coeffs_fixed = get_coeffs_fixedref(outdirectory, ext)
+  # A = [i[1] for i in coeffs_fixed]
+  # B = range(len(A))
+  # Z = morphids
+
+  # ax3.plot(B, A, 'r*-')
+  # for a, b, z in zip(B, A, Z):
+  #     # Annotate the points 5 _points_ above and to the left of the vertex
+  #     ax3.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+  #                 textcoords='offset points')
+  # ax3.set_title('Relative to FIRST image')
+
 
 print outdirectory
     

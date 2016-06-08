@@ -2,7 +2,7 @@ clear all
 close all
 
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/'; % .mat files
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_samples_euclid_fixedref/'; % output pngs
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_fixedref/'; % output pngs
 
 im_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000/morph2000_gray_resize/';
 
@@ -27,6 +27,8 @@ fnames = sort_nat(fnames);
 first_im = load([source_root, fnames{1}]);
 first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
+sprintf('Loaded first feature vector %s from: %s', fnames{1}, source_root)
+
 % chunk_size = 5;
 % 
 % start_idx = 1;
@@ -36,7 +38,9 @@ first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 corr_vect = [];
 curr_vect_idx = 1;
 while 1
-
+    
+    fprintf('Starting calculations...')
+    
     if mod(curr_vect_idx, 100) == 0
         sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
     end
@@ -47,6 +51,8 @@ while 1
     pcorr = corr(first_feature_vect', curr_vect.featureVector');
     
     corr_vect = [corr_vect; pcorr];
+    
+    curr_vect_idx = curr_vect_idx + 1;
     
     if curr_vect_idx>length(fnames)
         break;

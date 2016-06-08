@@ -171,11 +171,15 @@ def find_projections(difference_vect, projections, nmorphs):
 
     return idxs
 
-def plot_sample_projections(projections, idxs, imdirectory, show_plot=True):
+def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
 
-    A = [projections[idx][1] for idx in idxs]
+    fmorphs, difference_vect, diff_vects = get_projection_vectors(outdirectory, ext)
+
+    projections = project_vectors(difference_vect, diff_vects)
+
+    A = [p[1] for p in projections]
     B = np.ones((len(A),1))
-    Z = [projections[idx][0] for idx in idxs]
+    Z = idxs #[projections[idx][0] for idx in idxs]
 
     fig, ax = plt.subplots()
 
@@ -187,14 +191,16 @@ def plot_sample_projections(projections, idxs, imdirectory, show_plot=True):
 
     plt.title('Scalar projection of morph differences in direction of difference between anchors')
 
-    imname = 'scalar_projection'
-    figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
+    imname = os.path.split(outdirectory)[1]+'_scalar_projection'
+    # figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
+    figdir = os.path.split(outdirectory)[0]
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
 
-    impath = os.path.join(figdir, imname+'.png')
-    plt.savefig(impath, format='png')
+    impath = os.path.join(figdir, imname+'.jpg')
+    print impath
+    plt.savefig(impath, format='jpg')
     print "Saved interval graph: %s" % impath
 
     if show_plot:

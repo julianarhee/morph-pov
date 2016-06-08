@@ -3,7 +3,7 @@ close all
 
 
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/'; % .mat files
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_samples_euclid_fixedref/'; % output pngs
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_fixedref/'; % output pngs
 
 im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/'; % input pngs
 
@@ -28,16 +28,20 @@ fnames = sort_nat(fnames);
 first_im = load([source_root, fnames{1}]);
 first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
+sprintf('Loaded first feature vector %s from: %s', fnames{1}, source_root)
+
 curr_vect_idx = 1;
 distance_vect = [];
 while 1
-
+    
+    fprintf('Starting calculations...')
+    
     if mod(curr_vect_idx, 100) == 0
         sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
     end
          
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
-    D = norm(first_feature_vect - curr_vect.featureVector); % Get Euclidean distance between vec1 and curr_vect
+    D = norm(first_feature_vect' - curr_vect.featureVector'); % Get Euclidean distance between vec1 and curr_vect
     distance_vect = [distance_vect; D];
 
     curr_vect_idx = curr_vect_idx + 1;
@@ -70,7 +74,8 @@ fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_euclid_fixedref_%s.ma
 %% Get linearly-spaced samples
 
 nmorphs = 20;
-lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
+% lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
+lin_samples = linspace(corr_vect(1), corr_vect(end), nmorphs+2);
 
 sample_idxs = [];
 for i=1:length(lin_samples)
