@@ -34,7 +34,7 @@ curr_vect_idx = 1;
 distance_vect = [];
 while 1
     
-    fprintf('Starting calculations...')
+    sprintf('IDX: %i', curr_vect_idx)
     
     if mod(curr_vect_idx, 100) == 0
         sprintf('calculating correlation between 0 and %s', fnames{curr_vect_idx})
