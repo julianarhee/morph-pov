@@ -187,7 +187,7 @@ for input_idx=1:length(inputs)
     colormap('gray')
     title('MDS map')
 
-    saveas(hF,[out_root,corrType,sprintf('Corr_%s_MDS_%s.png', input, stimset)])
+    saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)])
 
     end
 end
