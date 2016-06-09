@@ -109,12 +109,12 @@ for input_idx=1:length(inputs)
         end
         nsamples = length(sample_idxs);
 
-    else
+    elseif strfind(input, 'pixels')
 
         F = [];
         for i=1:length(imnames)
             curr_im = double(imread([source_root, imnames{i}]));
-            F = [F reshape(curr_im, numel(curr_im), 1)];
+            F = [F; reshape(curr_im, 1, numel(curr_im))];
         end
         nsamples = length(imnames);
 
@@ -144,22 +144,22 @@ for input_idx=1:length(inputs)
     hF=figure;
     hold all
 
-    subplot(1,2,1)
+%     subplot(1,2,1)
     scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,colorList{1},'o')
 
     % scatter(distMatrixMap(nsamples+1:end,1),distMatrixMap(nsamples+1:end,2),sz,colorList{2},'o')
 
-    % saveas(hF,[out_root,corrType,sprintf('Corr_%s_MDS_%s_scatter.png', input, stimset)])
+    saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
 
     %plot w/ images
     % imSourceRoot='/home/cesar/Documents/Stimuli/static/trainingObjects/Blobs_HorizontalAzimuthRotation/';
-    % im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
+%     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
     im_source_root = source_root;
 
     sz=.015;
     hF=figure;
     hold all
-    subplot(1,2,2, hF)
+%     subplot(1,2,2)
     for i=1:length(imnames)
         imName=[im_source_root,imnames{i}];
         im0=double(imread(imName));
