@@ -8,7 +8,7 @@ close all
 
 % corrType='correlation';
 corrTypes={'correlation', 'euclidean'};
-inputs = {'pixel', 'V1features'};
+inputs = {'pixels', 'V1features'};
 
         
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
@@ -64,8 +64,13 @@ for input_idx=1:length(inputs)
 
     % % input = 'pixel';
     % input = 'V1features';
+    
+    if strfind(input, 'pixels')
+        iminfo = dir([source_root,'*.png']);
+    elseif strfind(input, 'V1features')
+        iminfo = dir([source_root,'*.mat']);
+    end
 
-    iminfo = dir([source_root,'*.png']);
     imnames = cell(1, length(iminfo));
     for i=1:length(iminfo)
         imnames{i} = iminfo(i).name;
@@ -83,12 +88,19 @@ for input_idx=1:length(inputs)
         main_mfile = dir([base_root,'*.mat']);
         for i=1:length(main_mfile)
             main_mfile_name = main_mfile(i).name;
-            if strfind(main_mfile_name, '_pcorr_neighbor')
-                load([base_root, main_mfile_name])
+            if strfind(corrType, 'correlation')
+                if strfind(main_mfile_name, '_pcorr_neighbor')
+                    load([base_root, main_mfile_name])
+                end
+            elseif strfind(corrType, 'euclidean')
+                if strfind(main_mfile_name, '_pcorr_neighbor')
+                    load([base_root, main_mfile_name])
+                end
             end
+               
         end
 
-        feat_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+        feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
         F = [];
         for idx=1:length(sample_idxs)
             curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', idx)]);

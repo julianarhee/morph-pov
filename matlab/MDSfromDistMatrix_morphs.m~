@@ -6,8 +6,8 @@ close all
 % input = 'pixel';
 % input = 'V1features';
 
-corrType='correlation';
-
+% corrType='correlation';
+corrTypes={'correlation', 'euclidean'};
 inputs = {'pixel', 'V1features'};
 
         
@@ -20,18 +20,21 @@ inputs = {'pixel', 'V1features'};
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_neighbor/';
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_fixedref/';
 
-source_roots = {'/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
-                '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
-                '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
-                '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
-                '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
-                '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_neighbor/',...
-                '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'};
+source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_neighbor/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'}; %,...
+%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_pcorr_fixedref/',...
+%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_euclid_fixedref/'};
 
 for CORR=1:length(corrTypes)
-    corrType = 
+    corrType = corrTypes{CORR}
+    
 for input_idx=1:length(inputs)
-    input = inputs{input_idx};
+    input = inputs{input_idx}
     
     for root=1:length(source_roots)
         source_root = source_roots{root}
@@ -62,7 +65,8 @@ for input_idx=1:length(inputs)
     % % input = 'pixel';
     % input = 'V1features';
 
-    iminfo = dir([source_root,'*.png']);
+    iminfo = dir([source_root,'*.png']); % FIX FOR V@1 faeturemat
+
     imnames = cell(1, length(iminfo));
     for i=1:length(iminfo)
         imnames{i} = iminfo(i).name;
@@ -80,12 +84,19 @@ for input_idx=1:length(inputs)
         main_mfile = dir([base_root,'*.mat']);
         for i=1:length(main_mfile)
             main_mfile_name = main_mfile(i).name;
-            if strfind(main_mfile_name, '_pcorr_neighbor')
-                load([base_root, main_mfile_name])
+            if strfind(corrType, 'correlation')
+                if strfind(main_mfile_name, '_pcorr_neighbor')
+                    load([base_root, main_mfile_name])
+                end
+            elseif strfind(corrType, 'euclidean')
+                if strfind(main_mfile_name, '_pcorr_neighbor')
+                    load([base_root, main_mfile_name])
+                end
             end
+               
         end
 
-        feat_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+        feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
         F = [];
         for idx=1:length(sample_idxs)
             curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', idx)]);
@@ -176,3 +187,5 @@ for input_idx=1:length(inputs)
 
     end
 end
+end
+
