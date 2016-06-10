@@ -113,12 +113,12 @@ for input_idx=1:length(inputs)
             feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
         end
         F = [];
-        for idx=1:length(imnames)
-            curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', idx)]);
+        for idx=1:length(sample_idxs)
+            curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', sample_idxs(idx))]);
             F = [F; curr_feat.featureVector];
             % F = [F curr_feat.featureVector']; doesn't work.. too big
         end
-        nsamples = length(imnames);
+        nsamples = length(sample_idxs);
 
     elseif strfind(input, 'pixels')
 

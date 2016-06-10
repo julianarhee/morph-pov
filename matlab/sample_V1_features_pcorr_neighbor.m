@@ -2,13 +2,24 @@ clear all
 close all
 
 
-source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
+% source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+% out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
+% 
+% im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
+% 
+% base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
-im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
 
+source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/'; % .mat files
+out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/pov20_pcorr_neighbor/'; % output pngs
 
-base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
+
+base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+
+parts = strsplit(source_root,'/');
+stimset = parts{end-1};
+
 
 if ~isdir(out_root)
     mkdir(out_root)
@@ -127,6 +138,11 @@ end
 im_names = sort_nat(im_names);
 % 
 
+if strfind(stimset, 'pov20')
+    sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+end
+
+
 % Save selected samples:
 for i=1:length(sample_idxs)
    curr_sample_idx = sample_idxs(i);
@@ -138,5 +154,9 @@ for i=1:length(sample_idxs)
 %    dest = dest{1}
    copyfile(src, dest);
 end
+
+%% Crap sampling due to nonlinear distances?  Generally seems okay for neighbor comparisons (both euclid and pcorr)
+% only seems to be a problem for fixed-ref...
+
 save([base_dir,sprintf('V1features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))], ...
     'cumsum_total', 'sample_idxs', '-append')

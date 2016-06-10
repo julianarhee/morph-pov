@@ -1,14 +1,26 @@
 clear all
 close all
 
+% 
+% source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/'; % .mat files
+% out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_fixedref/'; % output pngs
+% 
+% im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/'; % input pngs
+% 
+% base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
-source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/'; % .mat files
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_fixedref/'; % output pngs
+source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/'; % .mat files
+out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/pov20_euclid_fixedref/'; % output pngs
 
-im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/'; % input pngs
+im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
 
-base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
+
+parts = strsplit(source_root,'/');
+stimset = parts{end-1};
+
+    
 if ~isdir(out_root)
     mkdir(out_root)
     sprintf('Created output dir: %s', out_root)
@@ -75,7 +87,7 @@ fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_euclid_fixedref_%s.ma
 
 nmorphs = 20;
 % lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
-lin_samples = linspace(corr_vect(1), corr_vect(end), nmorphs+2);
+lin_samples = linspace(distance_vect(1), distance_vect(end), nmorphs+2);
 
 sample_idxs = [];
 for i=1:length(lin_samples)
@@ -92,6 +104,12 @@ for i=1:length(im_info)
 end
 im_names = sort_nat(im_names);
 % 
+
+if strfind(stimset, 'pov20')
+    sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+end
+        
+        
 for i=1:length(sample_idxs)
    curr_sample_idx = sample_idxs(i);
    
@@ -102,3 +120,10 @@ for i=1:length(sample_idxs)
    dest = dest{1}
    copyfile(src, dest);
 end
+
+%%
+% CRAP SAMPLING due to non-linear changes:
+sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+
+save([base_dir,sprintf('V1features_euclid_fixedref_%s.mat', num2str(length(fnames)))], ...
+    'sample_idxs', '-append')
