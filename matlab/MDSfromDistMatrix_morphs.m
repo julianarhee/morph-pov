@@ -1,6 +1,9 @@
 clear all
 close all
 
+add(genpath('./helpers'))
+add(genpath('./hmaxMatlab'))
+
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
 
 % input = 'pixel';
