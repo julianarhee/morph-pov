@@ -35,7 +35,7 @@ source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resi
 %                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_euclid_fixedref/'};
 
 alt_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
-
+                        
 for CORR=1:length(corrTypes)
     corrType = corrTypes{CORR};
     
@@ -48,6 +48,13 @@ for input_idx=1:length(inputs)
         parts = strsplit(source_root,'/');
         stimset = parts{end-1};
         
+        if strfind(stimset, 'pov20') % POV20 stuff is in different place, since no sampling
+            feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/';
+        else
+            feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+        end
+
+
         base_root = ['/', fullfile(parts{1:end-2}), '/'];
         
         if strfind(stimset, 'pov20')
@@ -67,13 +74,14 @@ for input_idx=1:length(inputs)
     %     end
 
         % Get the stimuli for pdist matrix:
-        if strfind(input, 'pixels')                 % Compare images pixel-wise 
-            iminfo = dir([source_root,'*.png']);
-            
-        elseif strfind(input, 'V1features')
-            iminfo = dir([source_root,'*.mat']);    % Compare V1-feature responses to image
-        end
-
+%         if strfind(input, 'pixels')                 % Compare images pixel-wise 
+%             iminfo = dir([source_root,'*.png']);
+%             
+%         elseif strfind(input, 'V1features')
+%             iminfo = dir([base_root,'*.mat']);    % Compare V1-feature responses to image
+%         end
+        
+        iminfo = dir([source_root,'*.png']);
         imnames = cell(1, length(iminfo));
         for i=1:length(iminfo)
             imnames{i} = iminfo(i).name;
@@ -83,11 +91,13 @@ for input_idx=1:length(inputs)
         
         % Load main .mat for V1 feature vector to get the sample_idxs (need
         % this to grab the correct V1-feature-vector from source bank.
+        dist_struct = struct();
+        mat_file_name = '';
         if strfind(input, 'V1features')
 
             % switch base_root to find main V1features .mat for POV20 stimset:
             if strfind(stimset, 'pov')
-                base_root = alt_base_root;
+                base_root = alt_base_root; % redirect to V1_features/samples dir since POV20 doesn't resample
             end
 
             % NO .MAT for any _fixedref, since sampling looked terrible
@@ -96,24 +106,21 @@ for input_idx=1:length(inputs)
                 main_mfile_name = main_mfile(i).name;
                 if strfind(corrType, 'correlation')
                     if strfind(main_mfile_name, sprintf('_pcorr_neighbor_%i', nstims))
+                        mat_file_name = main_mfile_name;
                         load([base_root, main_mfile_name])
                     end
                 elseif strfind(corrType, 'euclidean')
-                    if strfind(main_mfile_name, sprintf('_pcorr_neighbor_%i', nstims))
+                    if strfind(main_mfile_name, sprintf('_euclid_neighbor_%i', nstims))
+                        mat_file_name = main_mfile_name;
                         load([base_root, main_mfile_name])
                     end
                 end
 
             end
 
-            if strfind(stimset, 'pov20') % POV20 stuff is in different place, since no sampling
-                feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/';
-            else
-                feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-            end
             F = [];
             for idx=1:length(sample_idxs)
-                curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', sample_idxs(idx)-1)]);
+                curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', sample_idxs(idx))]);
                 F = [F; curr_feat.featureVector];  % F = [F curr_feat.featureVector']; doesn't work.. too big
             end
             nsamples = length(sample_idxs);
@@ -130,12 +137,24 @@ for input_idx=1:length(inputs)
         end
 
 %         sprintf('Using distance metric: %s', corrType)
-        dist_mat = pdist(F, corrType);
-        dist_mat=squareform(dist_mat);
-
-        %get rid of float-point artifacts that make matrix unsymmetric
-        dist_mat=round(dist_mat*10000)/10000;
-
+        if isempty(dist_struct)
+            dist_mat = pdist(F, corrType);
+            dist_mat=squareform(dist_mat);
+            
+            %get rid of float-point artifacts that make matrix unsymmetric
+            dist_mat=round(dist_mat*10000)/10000;
+            
+            dist_struct.(corrType) = dist_mat;
+            
+            if ~isempty(mat_file_name)
+                save([base_root, mat_file_name], 'dist_struct', '-append')
+            end
+        else
+            dist_mat = dist_struct.(corrType);
+        end
+        
+        dist_mat
+        
         % opts = statset('Display','iter', 'MaxIter', 1500);
         opts = statset('MaxIter', 5000);
 
@@ -158,7 +177,7 @@ for input_idx=1:length(inputs)
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
         im_source_root = source_root;
 
-        sz=.02;
+        sz=.03;
         hF=figure;
         hold all
         for i=1:length(imnames)
