@@ -60,7 +60,6 @@ for input_idx=1:length(inputs)
         out_root = ['/', out_root,'/'];
 
         sprintf('SOURCE: %s\nSTIMSET: %s\nCORR: %s | INPUT: %s\n', source_root, stimset, corrType, input)
-        sprintf('Saving to:\n%s', out_root)
 
     %     if ~isdir(out_root)
     %         mkdir(out_root)
@@ -152,7 +151,9 @@ for input_idx=1:length(inputs)
         scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,colorList{1},'o')
 
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
-
+        outstring = [out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)];
+        sprintf('Saved SCATTER to:\n%s', outstring)
+        
         %plot w/ images
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
         im_source_root = source_root;
@@ -176,6 +177,8 @@ for input_idx=1:length(inputs)
         title('MDS map')
 
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)])
+        outstring = [out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)];
+        sprintf('Saved IMAGES to:\n%s', outstring)
 
     end
 end
