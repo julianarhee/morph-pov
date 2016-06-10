@@ -10,7 +10,7 @@ addpath(genpath('./hmaxMatlab'))
 % input = 'V1features';
 
 % corrType='correlation';
-corrTypes={'correlation', 'euclidean'};
+corrTypes= {'euclidean'}; %{'correlation', 'euclidean'};
 inputs = {'pixels', 'V1features'};
 
         
@@ -23,27 +23,32 @@ inputs = {'pixels', 'V1features'};
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_neighbor/';
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_fixedref/';
 
-source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_neighbor/',...
-                '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'}; %,...
+[~, user_name] = system('whoami');
+
+if strfind(user_name, 'rhee') % ON DIXIE
+    source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_neighbor/',...
+                    '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'}; %,...
+    alt_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+
 %                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_pcorr_fixedref/',...
 %                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_euclid_fixedref/'};
-
-% source_roots = {'/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_neighbor/',...
-%                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'};
-%             
-alt_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+else
+    source_roots = {'/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_neighbor/',...
+                    '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'};
+    alt_base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+end            
                         
 for CORR=1:length(corrTypes)
     corrType = corrTypes{CORR};
@@ -58,9 +63,18 @@ for input_idx=1:length(inputs)
         stimset = parts{end-1};
         
         if strfind(stimset, 'pov20') % POV20 stuff is in different place, since no sampling
-            feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/';
+            if strfind(user_name, 'rhee')
+                feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/';
+            else
+                feat_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/';
+            end
+                
         else
-            feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+            if strfind(user_name, 'rhee')
+                feat_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+            else
+                feat_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+            end
         end
 
 
@@ -95,7 +109,7 @@ for input_idx=1:length(inputs)
         for i=1:length(iminfo)
             imnames{i} = iminfo(i).name;
         end
-        imnames = sort_nat(imnames);
+        imnames = sort_nat(imnames)
 
         
         % Load main .mat for V1 feature vector to get the sample_idxs (need
@@ -162,7 +176,7 @@ for input_idx=1:length(inputs)
             dist_mat = dist_struct.(corrType);
         end
         
-        dist_mat
+        dist_struct
         
         % opts = statset('Display','iter', 'MaxIter', 1500);
         opts = statset('MaxIter', 5000);
@@ -177,7 +191,8 @@ for input_idx=1:length(inputs)
         hold all
 
         scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,colorList{1},'o')
-
+        scatter(distMatrixMap(1,1),distMatrixMap(1,2),sz,'b','o')
+        
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
         outstring = [out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)];
         sprintf('Saved SCATTER to:\n%s', outstring)
@@ -186,11 +201,11 @@ for input_idx=1:length(inputs)
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
         im_source_root = source_root;
 
-        sz=.03;
+        sz=10;
         hF=figure;
         hold all
         for i=1:length(imnames)
-            imName=[im_source_root,imnames{i}];
+            imName=[source_root,imnames{i}];
             im0=double(imread(imName));
             centerX=distMatrixMap(i,1);
             centerY=distMatrixMap(i,2);
