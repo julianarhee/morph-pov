@@ -58,10 +58,10 @@ for input_idx=1:length(inputs)
     sprintf('SOURCE: %s\nSTIMSET: %s\nCORR: %s | INPUT: %s\n', source_root, stimset, corrType, input)
     sprintf('Saving to:\n%s', out_root)
 
-    if ~isdir(out_root)
-        mkdir(out_root)
-        sprintf('Created output dir: %s', out_root)
-    end
+%     if ~isdir(out_root)
+%         mkdir(out_root)
+%         sprintf('Created output dir: %s', out_root)
+%     end
 
     % Get the stimuli for comp matrix:
     base_root = ['/', fullfile(parts{1:end-2}), '/'];
