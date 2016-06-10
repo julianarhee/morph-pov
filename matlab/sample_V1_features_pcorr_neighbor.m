@@ -2,20 +2,20 @@ clear all
 close all
 
 
-% source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-% out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
-% 
-% im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
-% 
-% base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
 
-
-source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/'; % .mat files
-out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/pov20_pcorr_neighbor/'; % output pngs
-
-im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
+im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
 
 base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+
+% 
+% source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/'; % .mat files
+% out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/pov20_pcorr_neighbor/'; % output pngs
+% 
+% im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
+% 
+% base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
 parts = strsplit(source_root,'/');
 stimset = parts{end-1};
@@ -140,6 +140,10 @@ im_names = sort_nat(im_names);
 
 if strfind(stimset, 'pov20')
     sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+else
+    sample_idxs(1) = 0;
+    sample_idxs(end) = length(fnames);
+    
 end
 
 
@@ -147,11 +151,15 @@ end
 for i=1:length(sample_idxs)
    curr_sample_idx = sample_idxs(i);
    
-   curr_sample = im_names(curr_sample_idx)
+   if i == 1
+       curr_sample = im_names(curr_sample_idx)
+   else
+       curr_sample = im_names(curr_sample_idx+1)
+   end
    src = strcat(im_root, curr_sample);
    src = src{1};
-   dest = strcat(out_root, sprintf('morph%i.png', i-1));
-%    dest = dest{1}
+   dest = strcat(out_root, curr_sample);
+   dest = dest{1}
    copyfile(src, dest);
 end
 
