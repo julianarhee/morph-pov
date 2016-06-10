@@ -125,7 +125,7 @@ for input_idx=1:length(inputs)
         end
         F = [];
         for idx=1:length(sample_idxs)
-            curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', sample_idxs(idx))]);
+            curr_feat = load([feat_root, sprintf('V1_features_morph%i.mat', sample_idxs(idx)-1)]);
             F = [F; curr_feat.featureVector];
             % F = [F curr_feat.featureVector']; doesn't work.. too big
         end
@@ -178,7 +178,7 @@ for input_idx=1:length(inputs)
 %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
     im_source_root = source_root;
 
-    sz=.015;
+    sz=.03;
     hF=figure;
     hold all
 %     subplot(1,2,2)
