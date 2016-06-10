@@ -1,8 +1,8 @@
 clear all
 close all
 
-add(genpath('./helpers'))
-add(genpath('./hmaxMatlab'))
+addpath(genpath('./helpers'))
+addpath(genpath('./hmaxMatlab'))
 
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
 
