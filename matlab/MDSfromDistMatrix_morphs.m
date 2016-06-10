@@ -24,8 +24,10 @@ inputs = {'pixels', 'V1features'};
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_fixedref/';
 
 source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
+    
                 '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
+                
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_project2/',...
@@ -33,6 +35,8 @@ source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resi
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_pcorr_fixedref/'}; %,...
 %                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_pcorr_fixedref/',...
 %                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_euclid_fixedref/'};
+
+alt_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
 for CORR=1:length(corrTypes)
     corrType = corrTypes{CORR};
@@ -54,6 +58,11 @@ for input_idx=1:length(inputs)
 
     parts = strsplit(source_root,'/');
     stimset = parts{end-1};
+    if strfind(stimset, 'pov20')
+        nstims = 22;
+    else
+        nstims = 2002;
+    end
 
     out_root=fullfile(parts{1:end-2});
     out_root = ['/', out_root,'/'];
@@ -92,15 +101,19 @@ for input_idx=1:length(inputs)
 
     % load .mat for V1 feature vector
     if strfind(input, 'V1features')
+        % switch base_root to find main V1features .mat for POV20 stimset:
+        if strfind(stimset, 'pov')
+            base_root = alt_base_root;
+        end
         main_mfile = dir([base_root,'*.mat']);
         for i=1:length(main_mfile)
             main_mfile_name = main_mfile(i).name;
             if strfind(corrType, 'correlation')
-                if strfind(main_mfile_name, '_pcorr_neighbor')
+                if strfind(main_mfile_name, sprintf('_pcorr_neighbor_%i', nstims))
                     load([base_root, main_mfile_name])
                 end
             elseif strfind(corrType, 'euclidean')
-                if strfind(main_mfile_name, '_pcorr_neighbor')
+                if strfind(main_mfile_name, sprintf('_pcorr_neighbor_%i', nstims))
                     load([base_root, main_mfile_name])
                 end
             end
