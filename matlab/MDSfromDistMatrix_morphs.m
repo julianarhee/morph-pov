@@ -158,7 +158,7 @@ for input_idx=1:length(inputs)
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
         im_source_root = source_root;
 
-        sz=.03;
+        sz=.02;
         hF=figure;
         hold all
         for i=1:length(imnames)
