@@ -20,7 +20,8 @@ inputs = {'pixels', 'V1features'};
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_neighbor/';
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_fixedref/';
 
-source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
+source_roots = {'/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
+                '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_neighbor/',...
@@ -31,13 +32,13 @@ source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/m
 %                 '/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/morph2000_euclid_fixedref/'};
 
 for CORR=1:length(corrTypes)
-    corrType = corrTypes{CORR}
+    corrType = corrTypes{CORR};
     
 for input_idx=1:length(inputs)
-    input = inputs{input_idx}
+    input = inputs{input_idx};
     
     for root=1:length(source_roots)
-        source_root = source_roots{root}
+        source_root = source_roots{root};
         
     % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
     % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/';
@@ -49,10 +50,13 @@ for input_idx=1:length(inputs)
     % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_fixedref/';
 
     parts = strsplit(source_root,'/');
-    stimset = parts{end-1}
+    stimset = parts{end-1};
 
     out_root=fullfile(parts{1:end-2});
-    out_root = ['/', out_root,'/']
+    out_root = ['/', out_root,'/'];
+    
+    sprintf('SOURCE: %s\nSTIMSET: %s\nCORR: %s | INPUT: %s\n', source_root, stimset, corrType, input)
+    sprintf('Saving to:\n%s', out_root)
 
     if ~isdir(out_root)
         mkdir(out_root)
