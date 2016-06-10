@@ -23,7 +23,7 @@ inputs = {'pixels', 'V1features'};
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_neighbor/';
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_correl_fixedref/';
 
-source_roots = {'/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
+source_roots = {'/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_euclid_neighbor/',...
                 '/nas/volume1/behavior/stimuli/pnas_morphs/pixels/samples/test_euclid_fixedref/',...
@@ -82,7 +82,7 @@ for input_idx=1:length(inputs)
     for i=1:length(iminfo)
         imnames{i} = iminfo(i).name;
     end
-    imnames = sort_nat(imnames)
+    imnames = sort_nat(imnames);
 
 %     corrType='correlation';
     % corrType='euclidean';
