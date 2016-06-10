@@ -82,7 +82,7 @@ for input_idx=1:length(inputs)
     for i=1:length(iminfo)
         imnames{i} = iminfo(i).name;
     end
-    imnames = sort_nat(imnames);
+    imnames = sort_nat(imnames)
 
 %     corrType='correlation';
     % corrType='euclidean';
