@@ -1,13 +1,15 @@
 clear all
 close all
 
+addpath(genpath('/helpers'))
+addpath(genpath('./hmaxMatlab'))
 
-source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
-out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/morph2000_gray_resize/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/morph2000_pcorr_neighbor/';
 
-im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
+im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
 
-base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
 % 
 % source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/'; % .mat files
@@ -21,10 +23,10 @@ parts = strsplit(source_root,'/');
 stimset = parts{end-1};
 
 
-if ~isdir(out_root)
-    mkdir(out_root)
-    sprintf('Created output dir: %s', out_root)
-end
+% if ~isdir(out_root)
+%     mkdir(out_root)
+%     sprintf('Created output dir: %s', out_root)
+% end
 
 finfo = dir([source_root,'*.mat']);
 fnames = cell(1, length(finfo));
@@ -114,57 +116,57 @@ fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_pcorr_neighbor_%s.mat
 %    copyfile(src, dest);
 % end
 
-%%
-nmorphs = 20;
-cumsum_total = cumsum(corr_vect);
-start_point = cumsum_total(1);
-end_point = cumsum_total(end);
-lin_samples = linspace(start_point, end_point, nmorphs+2);
-
-sample_idxs = [];
-for i=1:length(lin_samples)
-    [c index] = min(abs(cumsum_total-lin_samples(i)))
-    sample_idxs = [sample_idxs; index];
-end
-
-% x = cumsum_total(sample_idxs);
-% plot(x)
-
-im_info = dir([im_root,'*.png']);
-im_names = cell(1, length(im_info));
-for i=1:length(im_info)
-    im_names{i} = im_info(i).name;
-end
-im_names = sort_nat(im_names);
+% %%
+% nmorphs = 20;
+% cumsum_total = cumsum(corr_vect);
+% start_point = cumsum_total(1);
+% end_point = cumsum_total(end);
+% lin_samples = linspace(start_point, end_point, nmorphs+2);
 % 
-
-if strfind(stimset, 'pov20')
-    sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
-else
-    sample_idxs(1) = 0;
-    sample_idxs(end) = length(fnames);
-    
-end
-
-
-% Save selected samples:
-for i=1:length(sample_idxs)
-   curr_sample_idx = sample_idxs(i);
-   
-   if i == 1
-       curr_sample = im_names(curr_sample_idx)
-   else
-       curr_sample = im_names(curr_sample_idx+1)
-   end
-   src = strcat(im_root, curr_sample);
-   src = src{1};
-   dest = strcat(out_root, curr_sample);
-   dest = dest{1}
-   copyfile(src, dest);
-end
-
-%% Crap sampling due to nonlinear distances?  Generally seems okay for neighbor comparisons (both euclid and pcorr)
-% only seems to be a problem for fixed-ref...
-
-save([base_dir,sprintf('V1features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))], ...
-    'cumsum_total', 'sample_idxs', '-append')
+% sample_idxs = [];
+% for i=1:length(lin_samples)
+%     [c index] = min(abs(cumsum_total-lin_samples(i)))
+%     sample_idxs = [sample_idxs; index];
+% end
+% 
+% % x = cumsum_total(sample_idxs);
+% % plot(x)
+% 
+% im_info = dir([im_root,'*.png']);
+% im_names = cell(1, length(im_info));
+% for i=1:length(im_info)
+%     im_names{i} = im_info(i).name;
+% end
+% im_names = sort_nat(im_names);
+% % 
+% 
+% if strfind(stimset, 'pov20')
+%     sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+% else
+%     sample_idxs(1) = 0;
+%     sample_idxs(end) = length(fnames);
+%     
+% end
+% 
+% 
+% % Save selected samples:
+% for i=1:length(sample_idxs)
+%    curr_sample_idx = sample_idxs(i);
+%    
+%    if i == 1
+%        curr_sample = im_names(curr_sample_idx)
+%    else
+%        curr_sample = im_names(curr_sample_idx+1)
+%    end
+%    src = strcat(im_root, curr_sample);
+%    src = src{1};
+%    dest = strcat(out_root, sprintf('morph%i.png', i));
+%    dest = dest{1}
+%    copyfile(src, dest);
+% end
+% 
+% %% Crap sampling due to nonlinear distances?  Generally seems okay for neighbor comparisons (both euclid and pcorr)
+% % only seems to be a problem for fixed-ref...
+% 
+% save([base_dir,sprintf('V1features_pcorr_neighbor_%s.mat', num2str(length(corr_vect)))], ...
+%     'cumsum_total', 'sample_idxs', '-append')
