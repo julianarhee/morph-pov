@@ -212,7 +212,7 @@ def plot_all_distances(outdirectory, distances, morphids, fixedref=False, show_p
 
     # cums = scipy.cumsum[d[1] for d in distances]
     # A = [cums[i] for i in mids]
-    
+
     ax2.plot(B, A, 'r*', markerSize = 10)
     for a, b, z in zip(B, A, Z):
         # Annotate the points 5 _points_ above and to the left of the vertex
@@ -251,7 +251,7 @@ def plot_sampled_distances(outdirectory, morphids, fixedref=False, ext='.png', s
     B = range(len(A))
     Z = morphids[1:]
 
-    fig, (ax1, ax2, ax3) = plt.subplots(3)
+    fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, figsize=(20,10))
     ax1.plot(B, A, 'r*-')
     for a, b, z in zip(B, A, Z):
         # Annotate the points 5 _points_ above and to the left of the vertex
@@ -331,7 +331,7 @@ def plot_sampled_distances(outdirectory, morphids, fixedref=False, ext='.png', s
 #         plt.show()
 
 
-def get_sampled_morphs(imdirectory, outdirectory, nmorphs=20, fixedref=True, ext='.png'):
+def get_sampled_morphs(imdirectory, outdirectory, nmorphs=20, fixedref=True, ext='.png', save_samples=True):
 
     if fixedref is True:
         fmorphs, coeffs = get_coeffs_fixedref(imdirectory, ext)
@@ -355,19 +355,20 @@ def get_sampled_morphs(imdirectory, outdirectory, nmorphs=20, fixedref=True, ext
 
     morph_sample_paths = [os.path.join(imdirectory, fmorphs[midx]) for midx in morph_sample_idxs]
 
-    if not os.path.exists(outdirectory):
-        os.makedirs(outdirectory)
+    if save_samples is True:
+        if not os.path.exists(outdirectory):
+            os.makedirs(outdirectory)
 
-    for m in morph_sample_paths:
-        copy_file(m, outdirectory)
-        print "Copied files to %s: ", outdirectory
+        for m in morph_sample_paths:
+            copy_file(m, outdirectory)
+            print "Copied files to %s: ", outdirectory
 
-    morph_list = sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)
-    for midx,morphname in enumerate(morph_list):
-        old = morphname.split("morph")[1]
-        old = old.split('.')[0]
-        morphname = os.path.join(outdirectory,morphname)
-        os.rename(morphname, morphname.replace(old, str(midx)))
+        morph_list = sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)
+        for midx,morphname in enumerate(morph_list):
+            old = morphname.split("morph")[1]
+            old = old.split('.')[0]
+            morphname = os.path.join(outdirectory,morphname)
+            os.rename(morphname, morphname.replace(old, str(midx)))
 
     return morph_sample_idxs, morph_sample_coeffs, coeffs #morph_sample_coeffs
 
@@ -387,6 +388,9 @@ def run():
     parser.add_option('--fixedref', action="store_true",
                       dest="fixedref", default="False", help="sample distance measure relative to fixed reference")
 
+    parser.add_option('--no-save', action="store_false",
+                      dest="save_samples", default="True", help="create new samples and save them")
+
     (options, args) = parser.parse_args()
 
     imdir = options.imdir
@@ -398,8 +402,9 @@ def run():
     nmorphs = int(options.nmorphs)
 
     fixedref = options.fixedref
+    save_samples = options.save_samples
 
-    morph_sample_idxs, morph_sample_coeffs, all_coeffs = get_sampled_morphs(imdir, outdir, nmorphs, fixedref, ext)
+    morph_sample_idxs, morph_sample_coeffs, all_coeffs = get_sampled_morphs(imdir, outdir, nmorphs, fixedref, ext, save_samples)
     plot_all_distances(outdir, all_coeffs, morph_sample_idxs, fixedref=fixedref, show_plot=plot)
     plot_sampled_distances(outdir, morph_sample_idxs, fixedref=fixedref, ext='.png', show_plot=plot)
 

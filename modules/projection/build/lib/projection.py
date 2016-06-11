@@ -171,17 +171,18 @@ def find_projections(difference_vect, projections, nmorphs):
 
     return idxs
 
-def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
 
-    fmorphs, difference_vect, diff_vects = get_projection_vectors(outdirectory, ext)
+def plot_all_projections(outdirectory, projections, idxs, ext='.png', show_plot=True):
 
-    projections = project_vectors(difference_vect, diff_vects)
+    # fmorphs, difference_vect, diff_vects = get_projection_vectors(outdirectory, ext)
+
+    # projections = project_vectors(difference_vect, diff_vects)
 
     A = [p[1] for p in projections]
     B = np.ones((len(A),1))
     Z = idxs #[projections[idx][0] for idx in idxs]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(20,10))
 
     ax.plot(A, B, 'r*')
     for a, b, z in zip(A, B, Z):
@@ -191,7 +192,7 @@ def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
 
     plt.title('Scalar projection of morph differences in direction of difference between anchors')
 
-    imname = os.path.split(outdirectory)[1]+'_scalar_projection'
+    imname = os.path.split(outdirectory)[1]+'_all_projection'
     # figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
     figdir = os.path.split(outdirectory)[0]
 
@@ -207,7 +208,44 @@ def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
         plt.show()
 
 
-def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext):
+
+def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
+
+    fmorphs, difference_vect, diff_vects = get_projection_vectors(outdirectory, ext)
+
+    projections = project_vectors(difference_vect, diff_vects)
+
+    A = [p[1] for p in projections]
+    B = np.ones((len(A),1))
+    Z = np.array(idxs)+1 # add 1 to make labeled # correspond to morph #
+
+    fig, ax = plt.subplots(figsize=(20,10))
+
+    ax.plot(A, B, 'r*')
+    for a, b, z in zip(A, B, Z):
+        # Annotate the points 5 _points_ above and to the left of the vertex
+        ax.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+                    textcoords='offset points')
+
+    plt.title('Scalar projection of morph differences in direction of difference between anchors')
+
+    imname = os.path.split(outdirectory)[1]+'_sampled_projection'
+    # figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
+    figdir = os.path.split(outdirectory)[0]
+
+    if not os.path.exists(figdir):
+        os.makedirs(figdir)
+
+    impath = os.path.join(figdir, imname+'.jpg')
+    print impath
+    plt.savefig(impath, format='jpg')
+    print "Saved interval graph: %s" % impath
+
+    if show_plot:
+        plt.show()
+
+
+def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext='.png', save_samples=True):
 
     fmorphs, difference_vect, diff_vects = get_projection_vectors(imdirectory, ext)
     projections = project_vectors(difference_vect, diff_vects)
@@ -224,18 +262,19 @@ def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext):
 
     morph_sample_paths = [os.path.join(imdirectory, fmorphs[midx]) for midx in morph_sample_idx]
 
-    if not os.path.exists(outdirectory):
-        os.makedirs(outdirectory)
+    if save_samples is True:
+        if not os.path.exists(outdirectory):
+            os.makedirs(outdirectory)
 
-    for m in morph_sample_paths:
-        copy_file(m, outdirectory)
+        for m in morph_sample_paths:
+            copy_file(m, outdirectory)
 
-    morph_list = sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)
-    for midx,morphname in enumerate(morph_list):
-        old = morphname.split("morph")[1]
-        old = old.split('.')[0]
-        morphname = os.path.join(outdirectory,morphname)
-        os.rename(morphname, morphname.replace(old, str(midx)))
+        morph_list = sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)
+        for midx,morphname in enumerate(morph_list):
+            old = morphname.split("morph")[1]
+            old = old.split('.')[0]
+            morphname = os.path.join(outdirectory,morphname)
+            os.rename(morphname, morphname.replace(old, str(midx)))
 
     return projections, idxs
 
@@ -253,6 +292,9 @@ def run():
     parser.add_option('--nmorphs', action="store",
                       dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
 
+    parser.add_option('--no-save', action="store_false",
+                      dest="save_samples", default="True", help="create new samples and save them")
+
     (options, args) = parser.parse_args()
 
     imdir = options.imdir
@@ -263,10 +305,14 @@ def run():
     plot = options.plot
     nmorphs = int(options.nmorphs)
 
+    save_samples = options.save_samples
 
-    projs, idxs = get_projected_morphs(nmorphs, imdir, outdir, ext)
+    projs, idxs = get_projected_morphs(nmorphs, imdir, outdir, ext, save_samples)
 
-    plot_sample_projections(projs, idxs, imdir, show_plot=plot)
+
+    plot_all_projections(outdir, projs, idxs, ext, show_plot=plot)
+
+    plot_sampled_projections(outdir, idxs, ext, show_plot=plot)
 
 if __name__ == '__main__':
     run()

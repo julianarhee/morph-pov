@@ -56,6 +56,9 @@ parser.add_option('--fixedref', action="store_true",
                   dest="fixedref", default="False", help="sample distance measure relative to fixed reference")
 
 
+parser.add_option('--no-save', action="store_false",
+                  dest="save_samples", default="True", help="create new samples and save them")
+
 (options, args) = parser.parse_args()
 
 imdirectory = options.imdir
@@ -69,13 +72,14 @@ method = options.method
 
 plot = options.plot
 fixedref = options.fixedref
+save_samples = options.save_samples
 
 print "METHOD: %s" % method
 
 if method=='euclid':
 
     print "Using Euclidean distance..."
-    dists, sums, morphids = get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), fixedref, im_format)
+    dists, sums, morphids = euc.get_even_dists_euclidean(imdirectory, outdirectory, int(nmorphs), fixedref, im_format, save_samples)
 
     euc.plot_all_distances(outdirectory, dists, sums, morphids, fixedref, show_plot=plot)
 
@@ -86,9 +90,9 @@ elif method=='project':
 
     print "Using scalar projection..."
 
-    projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format)
-    
-    proj.plot_sampled_projections(outdirectory, idxs, show_plot=plot)
+    projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format, save_samples)
+    proj.plot_all_projections(outdirectory, projs, idxs, im_format, show_plot=plot)
+    proj.plot_sampled_projections(outdirectory, idxs, im_format, show_plot=plot)
     # if plot:
         # proj.plot_sampled_projections(projs, idxs, imdirectory, show_plot=plot)
 
@@ -96,23 +100,23 @@ elif method=='corr':
 
     print "Using correlation..."
 
-    morph_idxs, morph_coeffs, all_coeffs = corr.get_sampled_morphs(imdirectory, outdirectory, nmorphs, fixedref, im_format)
+    morph_idxs, morph_coeffs, all_coeffs = corr.get_sampled_morphs(imdirectory, outdirectory, nmorphs, fixedref, im_format, save_samples)
 
     corr.plot_all_distances(outdirectory, all_coeffs, morph_idxs, fixedref=fixedref, show_plot=plot)
     corr.plot_sampled_distances(outdirectory, morph_idxs, fixedref=fixedref, ext='.png', show_plot=plot)
 
 elif method=='pov':
 
-  morphs = os.listdir(outdirectory)
+  morphs = os.listdir(imdirectory)
   morphs = sorted([i for i in morphs if im_format in i], key=key_func)
   morphids = range(len(morphs))
 
 
-  euc.plot_sampled_distances(outdirectory, morphids, fixedref, im_format, show_plot=plot)
+  euc.plot_sampled_distances(imdirectory, morphids, fixedref, im_format, show_plot=plot)
 
-  corr.plot_sampled_distances(outdirectory, morphids, fixedref, im_format, show_plot=plot)
+  corr.plot_sampled_distances(imdirectory, morphids, fixedref, im_format, show_plot=plot)
 
-  proj.plot_sampled_projections(outdirectory, morphids, show_plot=plot)
+  proj.plot_sampled_projections(imdirectory, morphids, im_format, show_plot=plot)
   # print "Plotting each distance measure using INPUT: ", outdirectory
 
   # A = [i[1] for i in coeffs]
