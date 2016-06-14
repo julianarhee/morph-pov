@@ -112,7 +112,7 @@ def get_dists_fixedref(im_mat):
     return dists, cumsums
 
 
-def get_even_dists_euclidean(imdirectory, outdirectory, npoints, fixedref=False, ext='.png'):
+def get_even_dists_euclidean(imdirectory, outdirectory, npoints, fixedref=False, ext='.png', save_samples=True):
     # Get image paths for all ims -- sample from this bank:
 
     all_ims = sorted([f for f in os.listdir(imdirectory) if f.endswith(ext)], key=key_func)
@@ -171,17 +171,17 @@ def get_even_dists_euclidean(imdirectory, outdirectory, npoints, fixedref=False,
         print x, all_impaths[x]
     morphseq = [all_impaths[int(x)] for x in morphids]
 
-
-    if not os.path.exists(outdirectory):
-        os.makedirs(outdirectory)
-    
-    for i in morphseq:
-        copy_file(i, outdirectory)
-    for idx,morphname in enumerate(sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)):
-        old = morphname.split("morph")[1]
-        old = old.split('.')[0]
-        morphname = os.path.join(outdirectory,morphname)
-        os.rename(morphname, morphname.replace(old, str(idx)))
+    if save_samples is True:
+        if not os.path.exists(outdirectory):
+            os.makedirs(outdirectory)
+        
+        for i in morphseq:
+            copy_file(i, outdirectory)
+        for idx,morphname in enumerate(sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)):
+            old = morphname.split("morph")[1]
+            old = old.split('.')[0]
+            morphname = os.path.join(outdirectory,morphname)
+            os.rename(morphname, morphname.replace(old, str(idx)))
 
     return dists, cumsums, morphids
 
@@ -238,7 +238,7 @@ def plot_sampled_distances(outdirectory, morphids, fixedref=False, ext='.png', s
     B = range(len(A))
     Z = morphids[1:]
 
-    fig, (ax1, ax2, ax3) = plt.subplots(3)
+    fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, figsize=(20,10))
     ax1.plot(B, A, 'r*-')
     for a, b, z in zip(B, A, Z):
         # Annotate the points 5 _points_ above and to the left of the vertex
@@ -310,6 +310,9 @@ def run():
     parser.add_option('--fixedref', action="store_true",
                       dest="fixedref", default="False", help="sample distance measure relative to fixed reference")
 
+    parser.add_option('--no-save', action="store_false",
+                      dest="save_samples", default="True", help="create new samples and save them")
+
     (options, args) = parser.parse_args()
 
     imdir = options.imdir
@@ -324,12 +327,14 @@ def run():
 
     fixedref = options.fixedref
     print "FIXED? ", fixedref
+
+    save_samples = options.save_samples
     # tmp_ims, tmp_mat = get_imagemat_fromdir(imdir, im_format)
     # # print sys.argv[1]
     # # print sys.argv[2]
     # dists, sums = get_pairwise_diffs(tmp_mat)
 
-    dists, sums, morphids = get_even_dists_euclidean(imdir, outdir, nmorphs, fixedref, im_format)
+    dists, sums, morphids = get_even_dists_euclidean(imdir, outdir, nmorphs, fixedref, im_format, save_samples)
 
     plot_all_distances(outdir, dists, sums, morphids, fixedref, show_plot=plot)
 
