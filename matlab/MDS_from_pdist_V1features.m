@@ -56,6 +56,17 @@ for CORR=1:length(corrTypes)
 %                 feature_root = [feature_base_root, 'morph2000_gray_resize/'];
 %             end
 %         end
+        if strfind(stimset, 'v1_')
+            nstims = 2002;
+            feature_root = [feature_base_root, 'morph2000_gray_resize/'];
+        else
+            nstims = 22;
+            % Samples generated with python (i.e,. not using
+            % V1-features) do not have associated sample_idxs...
+            % Instead, use V1 features created for specific stimsets: 
+            feature_root = [feature_base_root, sprintf('%s_%s20/', D.sampled_distance, D.sampled_comparison)]
+        end
+
         D.nstims = nstims
         
 %         out_root=fullfile(parts{1:end-2});
@@ -111,6 +122,7 @@ for CORR=1:length(corrTypes)
             curr_mfile = sprintf('pdistmat_%s_%s_%i.mat', D.sampled_distance, D.sampled_comparison, D.nstims);
             save_new = 1;
         else
+            
             M = load([base_root, curr_mfile]);
             if isfield(M, 'M')
                 M = M.M;
@@ -158,7 +170,7 @@ for CORR=1:length(corrTypes)
 
         scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,colorList{1},'o')
         scatter(distMatrixMap(1,1),distMatrixMap(1,2),sz,'b','o')
-        title(sprintf(
+        title(sprintf('_%s_MDS_%s_scatter.png', input, stimset))
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
         outstring = [out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)];
         sprintf('Saved SCATTER to:\n%s', outstring)
