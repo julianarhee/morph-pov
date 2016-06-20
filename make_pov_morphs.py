@@ -143,7 +143,7 @@ n_total_morphs = n_real_morphs+2 # first and last 'morph' are the originals
 
 # CAMERA -------------------------
 cam_loc_start = np.array([0,0,-10])
-cam_loc_end = np.array([0,0,-20])
+cam_loc_end = np.array([0,0,-10])
 cam_loc_diff = cam_loc_end - cam_loc_start
 cam_angle = 15
 cam_lookat = np.array([0,0,0])
@@ -197,14 +197,14 @@ class Step(object):
 # 	rotate <20,0,0>
 # }
 sphere1_start = np.array([
-					[0, -0.4, 0.5], 
-					[1, 1, 1], 
-					[0, 0, 0]
+					[0., -0.4, 0.5], 
+					[1., 1., 1.], 
+					[0., 0., 0.]
 					])
 sphere1_end = np.array([
-					[0, -0.2, 0.7], 
+					[0., -0.2, 0.7], 
 					[0.8, 1.4, 0.8], 
-					[20, 0, 0]
+					[20., 0., 0.]
 					])
 sphere1_diff = sphere1_end - sphere1_start 
 
@@ -225,14 +225,14 @@ sphere1_diff = sphere1_end - sphere1_start
 # 	rotate <40,0,55>    
 # }
 sphere2_start = np.array([
-					[0, 0, -0.5], 
+					[0., 0., -0.5], 
 					[1.8, 0.6, 1.8], 
-					[30,0,0]
+					[30., 0., 0.]
 					])
 sphere2_end = np.array([
-					[0, 0, -0.5], 
-					[0.6, 0.6, 2], 
-					[40,0,55]
+					[0., 0., -0.5], 
+					[0.6, 0.6, 2.], 
+					[40., 0., 55.]
 					]) # LEFT EAR
 sphere2_diff = sphere2_end - sphere2_start
 
@@ -254,14 +254,19 @@ sphere2_diff = sphere2_end - sphere2_start
 # }    
 
 sphere4_start = np.array([
-					[0, -0.4, 0.5], 
-					[1, 1, 1], 
-					[0,0,0]
+					[0., 0., -0.5], 
+					[1.8, 0.6, 1.8], 
+					[30. ,0. , 0.]
 					])
+# sphere4_start = np.array([
+# 					[0, -0.4, 0.5], 
+# 					[1, 1, 1], 
+# 					[0,0,0]
+# 					])
 sphere4_end = np.array([
-					[0, 0, -0.5], 
-					[0.6, 0.6, 2], 
-					[40,0,-55]
+					[0., 0., -0.5], 
+					[0.6, 0.6, 2.], 
+					[40., 0., -55.]
 					]) # RIGHT EAR
 sphere4_diff = sphere4_end - sphere4_start
 
@@ -277,15 +282,15 @@ sphere4_diff = sphere4_end - sphere4_start
 
 
 sphere3_start = np.array([
-					[0, 0, -0.5], 
-					[0.5, 0.5, 1], 
-					[-45,0,0]
+					[0., 0., -0.5], 
+					[0.5, 0.5, 1.], 
+					[-45., 0., 0.]
 					])
 
 sphere3_end = np.array([
-					[0,0,0], 
-					[0,0,0], 
-					[0,0,0]
+					[0., 0., 0.], 
+					[0., 0., 0.], 
+					[0., 0., 0.]
 					])
 sphere3_diff = sphere3_end - sphere3_start
 
@@ -317,9 +322,10 @@ nosesize_steps = linmap(nosesize_diff, n_total_morphs)
 
 
 
-
+# additional scale parameter, so that masking with strengthA vs strengthB doesnt look so weird...
 s_scale5 = np.array([1.8, 0.6, 1.8])
-e_scale5 = np.array([1.8, 0.6, .9])
+# e_scale5 = np.array([1.8, 0.6, .9])
+e_scale5 = np.array([1.8, 0.6, 0.9])
 diff_scale5 = e_scale5 - s_scale5
 
 scale5_steps = linmap(diff_scale5, n_total_morphs)
@@ -327,8 +333,27 @@ scale5_steps = linmap(diff_scale5, n_total_morphs)
 
 # OBJECT params:
 # object_trans_start = np.array([0, -0.18, 5])
+# object_trans_start = np.array([0, -0.18, -5]) xxx
+# object_trans_end = np.array([0,0,0])
+
 object_trans_start = np.array([0, -0.18, 5])
-object_trans_end = np.array([0,0,0])
+object_trans_end = np.array([0,0,6])
+
+
+# object_trans_start = np.array([0, 0, 0])
+# object_trans_end = np.array([0,0,0])
+
+
+## FROM PERL SCRIPTS:
+# # Location of the whole object/stimulus (x,y,z)
+# @StimPos1 = qw( 0 -0.18 5 );
+# @StimPos2 = qw( 0 0 6 );
+# # Size of the whole object/stimulus (x,y,z)
+# @StimSize1 = qw( 0 1.02 0 );
+# @StimSize2 = qw( 0 0 0 );
+
+
+
 object_trans_diff = object_trans_end - object_trans_start
 
 object_trans_steps = linmap(object_trans_diff, n_total_morphs)
@@ -336,11 +361,20 @@ object_trans_steps = linmap(object_trans_diff, n_total_morphs)
 # POVRay:  SCALE of 0's is actually 1x:
 
 # object_scale_start = np.array([0, 1.02, 0])
-# object_scale_start = np.array([0, 0, 0])
-object_scale_start = np.array([1, 1.02, 1])
+# object_scale_end = np.array([0, 0, 0])
 
-object_scale_end = np.array([1,1,1])
+object_scale_start = np.array([1., 1.02, 1.])
+object_scale_end = np.array([1.,1.,1.])
+
+# object_scale_start = np.array([0,0,0])
+# object_scale_end = np.array([0,0,0])
+
+
+# object_scale_start = np.array([1,1.02,1])
+# object_scale_end = np.array([1, 1, 1])
+
 object_scale_diff = object_scale_end - object_scale_start
+# object_scale_diff = object_scale_start - object_scale_end
 
 object_scale_steps = linmap(object_scale_diff, n_total_morphs)
 
@@ -550,7 +584,7 @@ def run():
 	# nmorphs = 21
 	for morph_num in range(n_total_morphs):
 
-		strengthA = float(morph_num) / n_total_morphs
+		strengthA = float(morph_num) / (n_total_morphs-1)
 		strengthB = 1.0 - strengthA
 
 		config.update(
@@ -568,6 +602,9 @@ def run():
 		config['strengthA'] = float(strengthA)
 		config['strengthB'] = float(strengthB)
 
+		# if morph_num==n_total_morphs:
+		# 	config['scale5'] = '<%s>' % ', '.join(map(str, [0, 0, 0]))
+		# else:
 		config['scale5'] = '<%s>' % ', '.join(map(str, s_scale5 + scale5_steps[morph_num]))
 
 		config['object_translation'] = '<%s>' % ', '.join(map(str, object_trans_start + object_trans_steps[morph_num]))
@@ -621,13 +658,14 @@ def run():
 		    	rotate {{ rotation1 }}
 		    }
 		    
+		    
 		    // original head disc
 		    sphere { <0,0,0>, .8, {{strengthB}}  
 		    	translate <0.0, 0.0, -0.5>
 		    	scale {{ scale5 }}
 		    	rotate <30.0, 0.0, 0.0>   
 		    }
-
+		    
 
 		    // LEFT EAR
 		    sphere { <0,0,0>, .8, {{strengthA}}
@@ -677,9 +715,11 @@ def run():
 			fn.write(command)
 
 		# deprecated, but who cares
-		AspRat = 320/240.
-		xres = 1100
-		yres = int( xres / AspRat )
+		AspRat = 320/240. #320/240
+		xres = 1100 #1875 #2400 #1100
+
+		yres = int (xres / AspRat )
+		# yres = 1393
 		os.system('povray +I%s +O%s +W%s +H%s -D' % (outpath, impath, str(xres), str(yres))) # -D switch turns off graphic display
 		
 		# os.system('povray +I%s +O%s' % (outpath, impath))

@@ -2,8 +2,8 @@ clear all
 close all
 
 
-imdir='/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray/';
-outdir='/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
+imdir='/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/scaletrans_pl/gray/';
+outdir='/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/scaletrans_pl/size/';
 
 
 if ~isdir(outdir)
