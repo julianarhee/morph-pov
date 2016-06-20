@@ -165,7 +165,7 @@ for CORR=1:length(corrTypes)
         
 
 %         opts = statset('Display','iter', 'MaxIter', 1500);
-        opts = statset('MaxIter', 2000);
+        opts = statset('Display', 'iter', 'MaxIter', 2000);
 
         [distMatrixMap,distMatrixStress]=mdscale(dist_mat, 2, 'Options', opts);
 
