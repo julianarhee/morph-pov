@@ -23,44 +23,15 @@
 function ResizeBlobRatStims_General(fnames, imdir, outdir)
 
 FlagPlotBoundaries = 1;
-
-% Rotations
-% RangeView_y = -60:15:60;
-% N_view_y = length(RangeView_y);
-% RangeView_x = [-20,-15,-10,0,10,15,20]; %-10:10:10; %-15:15:15;
-% N_view_x = length(RangeView_x);
-% % Light sorce position
-% % RangeLight_X = [0 0 10];
-% % RangeLight_Y = [-10 10 0];
-% % RangeLight_Z = [-10 -10 -10];
-% % RangeLight_X = [-5];
-% % RangeLight_Y = [5];
-% % RangeLight_Z = [-10];
-% RangeLight_X = [0];
-% RangeLight_Y = [-10];
-% RangeLight_Z = [-10];
-% 
-
+crop = 1;
 
 % =========== Find the boundaries of the image resulting from averaging all views of both stimuli ===========
-% IdxImg = 1;
-% Loop on position of the light source
-% for LightPos = 1:length(RangeLight_X)
-%     SuffixName = ['_LighPos_x', num2str(RangeLight_X(LightPos)), '_y', num2str(RangeLight_Y(LightPos)), ...
-%         '_z',  num2str(RangeLight_Z(LightPos)), '.png'];
-%     
-    % Loop on all stimuli
-
 IdxImg = 1;  
 Image2Load = [imdir, fnames{IdxImg}];
 [img map] = imread( Image2Load );
 img_stack = img; % create mat stack to add subsequent images to
 IdxImg = IdxImg+1;
 while 1
-%         BaseName = ['Blob_', num2str(Stim) ,'_CamRot_y'];
-    % Loop on all ViewPoints
-%         for v_y = RangeView_y 
-%             for v_x = RangeView_x
 
     if mod(IdxImg, 100) == 0
         sprintf('Loading image: %s', fnames{IdxImg})
@@ -139,6 +110,7 @@ title('Average image');
 % Find image boundaries
 [col_bounds_can, row_bounds_can] = FindImageBoundingBox_call( img_av, FlagPlotBoundaries );
 
+
 % Decide the amount of the translation
 [nrow ncol] = size(img);
 Drow(1) = nrow-row_bounds_can(2);
@@ -149,7 +121,7 @@ if TransRow < 0
     disp(['Images must be translated to the TOP of ', num2str(abs(TransRow)), ' pixels']);
     % There is enough room in all the images for the required translation
     if abs(TransRow) < row_bounds_av(1)
-        FlagTranslate = 1;
+        FlagTranslate = 1
     else
         disp('ERROR: there is not enough room in all the images for the required translation ');
         disp('As a solution, paste first the image over a larger background');
@@ -165,7 +137,11 @@ end;
 
 % =========== Translate all images of the necessary amount ==============
 if FlagTranslate
-    
+    %trans_space = int8(linspace(0, round(TransRow), length(fnames)));
+    mid_to_last = int8(linspace(0, TransRow, length(fnames)));
+    start_to_mid = int8(linspace(-1*TransRow, 0, length(fnames)));
+    trans_space = [start_to_mid mid_to_last];
+
     figure;
     % Loop on position of the light source
 %     for LightPos = 1:length(RangeLight_X)
@@ -184,10 +160,18 @@ if FlagTranslate
                     [img map] = imread( Image2Load );
 
                     % Translate image
+                    %curr_frac = Stim/length(fnames);
+%                     curr_trans = double(trans_space(Stim))
+%                     se = translate(strel(1), [curr_trans 0]);
+                    
                     se = translate(strel(1), [TransRow 0]);
+                    
+%                     se = translate(strel(1), [10 0]); % this moves bunny
+%                     to low... (correct TransRow only positions bunny in
+%                     middle)
                     img_tr = imdilate(img,se);
                     
-                    OutName = [outdir, fnames{Stim}];
+                    OutName = [outdir, fnames{Stim}]
                     imwrite( img_tr, OutName, 'png' ); 
                     imshow(img_tr);
                     drawnow;
@@ -199,15 +183,28 @@ if FlagTranslate
 
 end; %if FlagTranslate
 
-
-return;
+if crop
+    disp('CROPPING');
+else
+    return;
+end
 
 % =========== Crop each image using the boundaries obtained above ==============
-xmin = col_bounds(1)-2;
+col_bounds = col_bounds_av % USE AVE, since 1st and Last only leads to middle images being cutoff
+row_bounds = row_bounds_av
+
+xmin = col_bounds(1)-2; % 2 pixels +/- to give extra leg room
 ymin = row_bounds(1)-2;
 width = col_bounds(2) - col_bounds(1) +4;
 height = row_bounds(2) - row_bounds(1) +4;
+
+% xmin = col_bounds(1);
+% ymin = row_bounds(1);
+% width = col_bounds(2) - col_bounds(1);
+% height = row_bounds(2) - row_bounds(1);
+
 rect = [xmin ymin width height];
+
 
 % Loop on position of the light source
 % for LightPos = 1:length(RangeLight_X)
@@ -222,7 +219,7 @@ rect = [xmin ymin width height];
 %             for v_x = RangeView_x
 
                 % Load image at right viewpoint
-                Image2Load = [outdir, fnames{Stim}];
+                Image2Load = [imdir, fnames{Stim}];
                 [img map] = imread( Image2Load );
 
                 img_crop = imcrop(img,rect);
