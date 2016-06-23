@@ -91,51 +91,71 @@ fprintf('Saved .mat to: %s', [base_dir, matname])
 % 
 % so_true = check_vect==corr_vect;
 
+%% Load .mat if exists to samlpe:
+
+mname = 'V1_euclid_fixedref_';
+base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
+
+mfiles = dir([base_root,'*.mat']);
+
+matnames = cell(1, length(mfiles));
+for i=1:length(mfiles)
+    if strfind(mfiles(i).name, mname)
+    	matnames{i} = mfiles(i).name;
+    end
+end
+matnames = matnames(~cellfun('isempty', matnames))
+
+matname = matnames{1};
+
+load([base_root, matname]); % This should load struct D
+
+
 %% Get linearly-spaced samples
+
+nmorphs = 20;
+% lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
+lin_samples = linspace(D.dist_vect(1), D.dist_vect(end), nmorphs+2);
+
+sample_idxs = [];
+for i=1:length(lin_samples)
+    [c index] = min(abs(D.dist_vect-lin_samples(i)))
+    sample_idxs = [sample_idxs; index];
+end
+
+% % and save them...
 % 
-% nmorphs = 20;
-% % lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
-% lin_samples = linspace(D.dist_vect(1), D.dist_vect(end), nmorphs+2);
+im_info = dir([im_root,'*.png']);
+im_names = cell(1, length(im_info));
+for i=1:length(im_info)
+    im_names{i} = im_info(i).name;
+end
+im_names = sort_nat(im_names);
 % 
-% sample_idxs = [];
-% for i=1:length(lin_samples)
-%     [c index] = min(abs(D.dist_vect-lin_samples(i)))
-%     sample_idxs = [sample_idxs; index];
-% end
-% 
-% % % and save them...
-% % 
-% im_info = dir([im_root,'*.png']);
-% im_names = cell(1, length(im_info));
-% for i=1:length(im_info)
-%     im_names{i} = im_info(i).name;
-% end
-% im_names = sort_nat(im_names);
-% % 
-% 
-% if strfind(stimset, 'pov20')
-%     sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
-% end
-%         
-% D.sample_idxs = sample_idxs;
-% 
-% for i=1:length(sample_idxs)
-%    curr_sample_idx = sample_idxs(i);
-%    
-%    curr_sample = im_names(curr_sample_idx)
-%    src = strcat(im_root, curr_sample);
-%    src = src{1};
-%    dest = strcat(out_root, curr_sample);
-%    dest = dest{1}
-%    copyfile(src, dest);
-% end
-% 
-% %%
-% % CRAP SAMPLING due to non-linear changes:
-% % sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
-% 
-% % save([base_dir,sprintf('V1features_euclid_fixedref_%s.mat', num2str(length(fnames)))], ...
-% %     'sample_idxs', '-append')
-% 
-% save([base_dir, matname], 'D', '-append')
-% 
+
+if strfind(stimset, 'pov20')
+    sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+end
+        
+D.sample_idxs = sample_idxs;
+
+for i=1:length(sample_idxs)
+   curr_sample_idx = sample_idxs(i);
+   
+   curr_sample = im_names(curr_sample_idx)
+   src = strcat(im_root, curr_sample);
+   src = src{1};
+   dest = strcat(out_root, curr_sample);
+   dest = dest{1}
+   copyfile(src, dest);
+end
+
+%%
+% CRAP SAMPLING due to non-linear changes:
+% sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+
+% save([base_dir,sprintf('V1features_euclid_fixedref_%s.mat', num2str(length(fnames)))], ...
+%     'sample_idxs', '-append')
+
+save([base_dir, matname], 'D', '-append')
+

@@ -54,35 +54,51 @@ else
     nstims = 2002;
 end
 
+
+%%
+
+clear all;
+clc;
+
+source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pov2000_final/';
+% out_root='/nas/volume1/behavior/stimuli/pnas_morphs/samples/V1_euclid_neighbor/';
+
+im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/final/';
+
+base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
+
+
 %%
 mfiles = dir([base_root,'*.mat']);
 
 matnames = cell(1, length(mfiles));
 for i=1:length(mfiles)
-    if strfind(mfiles(i).name, sprintf('neighbor_%i', nstims))
+    if strfind(mfiles(i).name, 'neighbor_')
     	matnames{i} = mfiles(i).name;
     end
 end
 matnames = matnames(~cellfun('isempty', matnames))
 
-%
+%%
 for f=1:length(matnames)
     f
     curr_mfile = matnames{f}
     load([base_root, curr_mfile]);
-
+    D
     
+    parts = strsplit(curr_mfile, '_');
+    sample_folder = strjoin(parts(1:end-1), '_')
+    out_root=[base_root, sample_folder, '/'];
+
     
 % end
         
     % Get linearly-spaced samples
 
     nmorphs = 20;
-    if strfind(stimset, 'euclid')
-        cumsum_total = cumsum(distance_vect);
-    else
-        cumsum_total = cumsum(D.dist_vect);
-    end
+
+    cumsum_total = cumsum(D.dist_vect);
+
     start_point = cumsum_total(1);
     end_point = cumsum_total(end);
     lin_samples = linspace(start_point, end_point, nmorphs+2);
@@ -126,12 +142,13 @@ for f=1:length(matnames)
        dest = dest{1}
        copyfile(src, dest);
     end
-
+    
+    D.sample_idxs = sample_idxs;
+    D.cumsum_total = cumsum_total;
 
     % Crap sampling due to nonlinear distances?  Generally seems okay for neighbor comparisons (both euclid and pcorr)
     % only seems to be a problem for fixed-ref...
 
-    save([base_dir,matname], ...
-        'cumsum_total', 'sample_idxs', '-append')
+    save([base_root,curr_mfile], 'D', '-append')
 
 end
