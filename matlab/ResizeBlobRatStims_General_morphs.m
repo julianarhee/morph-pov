@@ -36,7 +36,7 @@ while 1
     if mod(IdxImg, 100) == 0
         sprintf('Loading image: %s', fnames{IdxImg})
     end
-
+   
     % Load image at right viewpoint
     Image2Load = [imdir, fnames{IdxImg}];
     [img map] = imread( Image2Load );
@@ -173,8 +173,8 @@ if FlagTranslate
                     
                     OutName = [outdir, fnames{Stim}]
                     imwrite( img_tr, OutName, 'png' ); 
-                    imshow(img_tr);
-                    drawnow;
+                    %imshow(img_tr);
+                    %drawnow;
 
 %                 end; %for v_x
 %             end; %for v_y

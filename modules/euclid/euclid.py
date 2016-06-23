@@ -171,7 +171,7 @@ def get_even_dists_euclidean(imdirectory, outdirectory, npoints, fixedref=False,
         print x, all_impaths[x]
     morphseq = [all_impaths[int(x)] for x in morphids]
 
-    if save_samples is True:
+    if save_samples:
         if not os.path.exists(outdirectory):
             os.makedirs(outdirectory)
         

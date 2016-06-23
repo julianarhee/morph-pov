@@ -262,11 +262,14 @@ def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext='.png', save_sa
 
     morph_sample_paths = [os.path.join(imdirectory, fmorphs[midx]) for midx in morph_sample_idx]
 
-    if save_samples is True:
+    print "SAVE?? ", save_samples
+    if save_samples:
+        print 'TRUE'
         if not os.path.exists(outdirectory):
             os.makedirs(outdirectory)
 
         for m in morph_sample_paths:
+            print m
             copy_file(m, outdirectory)
 
         morph_list = sorted([f for f in os.listdir(outdirectory) if f.endswith(ext)],key=key_func)
@@ -275,6 +278,8 @@ def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext='.png', save_sa
             old = old.split('.')[0]
             morphname = os.path.join(outdirectory,morphname)
             os.rename(morphname, morphname.replace(old, str(midx)))
+
+        print "New sampled morphs saved to: ", outdirectory
 
     return projections, idxs
 

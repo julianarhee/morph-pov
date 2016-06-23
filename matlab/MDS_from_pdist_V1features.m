@@ -12,10 +12,10 @@ input = 'V1features';
 
 if strfind(user_name, 'rhee') % ON DIXIE
     base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/samples/'; %,...
-    feature_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/';
+    feature_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1features/';
 else
     base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
-    feature_base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/';
+    feature_base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1features/';
 end            
 
 sample_dirs = dir(base_root);
@@ -40,37 +40,27 @@ for CORR=1:length(corrTypes)
         D.sampled_feature = cond_info{1};
         D.sampled_distance = cond_info{2};
         D.sampled_comparison = cond_info{3};
-  
-        % FIX THIS FOR V1 referencing:
-%         if strfind(stimset, 'pov20')
-%             nstims = 22;
-%             feature_root = [feature_base_root, 'pov20/'];
-%         else
-%             nstims = 2002;
-%             if strfind(stimset, 'pixels_')
-%                 % Samples generated with python (i.e,. not using
-%                 % V1-features) do not have associated sample_idxs...
-%                 % Instead, use V1 features created for specific stimsets: 
-%                 feature_root = [feature_base_root, sprintf('%s_%s20', D.sampled_distance, D.sampled_comparison)]
-%             else
-%                 feature_root = [feature_base_root, 'morph2000_gray_resize/'];
-%             end
-%         end
-        if strfind(stimset, 'v1_')
-            nstims = 2002;
-            feature_root = [feature_base_root, 'morph2000_gray_resize/'];
+        
+        if strfind(stimset, 'V1_euclid_neighbor')
+            continue;
+        end
+% 
+        if strfind(stimset, 'V1_')
+
+            feature_root = [feature_base_root, 'pov2000_final/'];
         else
-            nstims = 22;
+
             % Samples generated with python (i.e,. not using
             % V1-features) do not have associated sample_idxs...
             % Instead, use V1 features created for specific stimsets: 
-            feature_root = [feature_base_root, sprintf('%s_%s20/', D.sampled_distance, D.sampled_comparison)]
+            feature_root = [feature_base_root, stimset, '/'];
         end
 
-        D.nstims = nstims
+       
+        %D.nstims = nstims
         
 %         out_root=fullfile(parts{1:end-2});
-        out_root = [strjoin(parts(1:end-3), '/'), '/figures/'];
+        out_root = [strjoin(parts(1:end-3), '/'), '/figures/MDS/'];
         
         if ~isdir(out_root)
             mkdir(out_root)
@@ -106,11 +96,16 @@ for CORR=1:length(corrTypes)
             mfiles{m} = main_mfiles(m).name;
         end
         
-        curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, sprintf('_%s_%s_%i', D.sampled_distance, D.sampled_comparison, D.nstims)))
+        curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, sprintf('%s_%s_%s', D.sampled_feature, D.sampled_distance, D.sampled_comparison)))
         curr_mfile = mfiles(curr_mfile_idx);
-        curr_mfile = curr_mfile{1}
+        if any(curr_mfile_idx)
+            curr_mfile = curr_mfile{1}
+        else
+            curr_mfile = '';
+        end
 
-        if strfind(curr_mfile, '_fixedref')
+
+        if strfind(curr_mfile, '_fixedref') & strfind(curr_mfile, 'V1_')
             sprintf('Skipping MDS for bad-sampling of %s stimset...', curr_mfile)
             continue;
         end
@@ -119,7 +114,7 @@ for CORR=1:length(corrTypes)
         if isempty(curr_mfile)
             M = struct();
             M.sample_idxs = linspace(1, length(imnames), length(imnames));
-            curr_mfile = sprintf('pdistmat_%s_%s_%i.mat', D.sampled_distance, D.sampled_comparison, D.nstims);
+            curr_mfile = sprintf('%s_%s_%s.mat', D.sampled_feature, D.sampled_distance, D.sampled_comparison);
             save_new = 1;
         else
             
@@ -164,12 +159,13 @@ for CORR=1:length(corrTypes)
 
         %plot w/ color scatter plot
         colorList={'r','b'};
+        c = linspace(1,5,nsamples);
         sz=10;
         hF=figure;
         hold all
 
-        scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,colorList{1},'o')
-        scatter(distMatrixMap(1,1),distMatrixMap(1,2),sz,'b','o')
+        scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,c,'o')
+        scatter(distMatrixMap(1,1),distMatrixMap(1,2),sz,'k','*')
         title(sprintf('_%s_MDS_%s_scatter.png', input, stimset))
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
         outstring = [out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)];
@@ -178,8 +174,11 @@ for CORR=1:length(corrTypes)
         %plot w/ images
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
 %         im_source_root = source_root;
-
-        sz=.03;
+        if strfind(corrType, 'euclidean')
+            sz = 5;
+        else
+            sz = .05;
+        end
         hF=figure;
         hold all
         for i=1:length(imnames)
@@ -195,7 +194,8 @@ for CORR=1:length(corrTypes)
         end
 
         colormap('gray')
-        title('MDS map')
+        %title('MDS map')
+        title(sprintf('_%s_MDS_%s_scatter.png', input, stimset))
 
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)])
         outstring = [out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)];

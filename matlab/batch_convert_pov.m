@@ -1,11 +1,11 @@
 clear all
 close all
 
-source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov20/im/';
-gray_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov20/gray/';
-size_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov20/crop/';
+source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/im/';
+gray_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/gray/';
+size_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/crop/';
 
-final_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov20/final/';
+final_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/final/';
 %%
 % Convert to grayscale:
 
@@ -196,8 +196,8 @@ if row_shift2==row_shift
 
         OutName = [final_root, fnames{Stim}]
         imwrite( img_tr, OutName, 'png' ); 
-        imshow(img_tr);
-        drawnow;
+        %imshow(img_tr);
+        %rawnow;
 
     end; %for Stim
 
