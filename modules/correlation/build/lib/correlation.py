@@ -355,7 +355,7 @@ def get_sampled_morphs(imdirectory, outdirectory, nmorphs=20, fixedref=True, ext
 
     morph_sample_paths = [os.path.join(imdirectory, fmorphs[midx]) for midx in morph_sample_idxs]
 
-    if save_samples is True:
+    if save_samples:
         if not os.path.exists(outdirectory):
             os.makedirs(outdirectory)
 

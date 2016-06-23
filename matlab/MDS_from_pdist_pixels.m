@@ -21,6 +21,7 @@ end
 sample_dirs = dir(base_root);
 sample_dirs = sample_dirs([sample_dirs.isdir]);
 sample_dirs = sample_dirs(arrayfun(@(x) x.name(1), sample_dirs) ~= '.');
+sample_dirs = sample_dirs(arrayfun(@(x) x.name(1), sample_dirs) ~= '.');
 
 D = struct();
 
@@ -31,6 +32,9 @@ for CORR=1:length(corrTypes)
         clear dist_mat D M
         source_root = [base_root, sample_dirs(root).name, '/'];
         
+        if strfind(source_root, 'V1')
+            continue;
+        end
         parts = strsplit(source_root,'/');
         stimset = parts{end-1};
         
@@ -171,12 +175,14 @@ for CORR=1:length(corrTypes)
 
         %plot w/ color scatter plot
         colorList={'r','b'};
+        c = linspace(1,5,nsamples);
+
         sz=10;
         hF=figure;
         hold all
-
-        scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,colorList{1},'o')
-        scatter(distMatrixMap(1,1),distMatrixMap(1,2),sz,'b','o')
+    
+        scatter(distMatrixMap(1:nsamples,1),distMatrixMap(1:nsamples,2),sz,c,'o')
+        scatter(distMatrixMap(1,1),distMatrixMap(1,2),sz,'k','*')
         title(sprintf('_%s_MDS_%s_scatter.png', input, stimset))
         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
         outstring = [out_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)];
@@ -186,12 +192,12 @@ for CORR=1:length(corrTypes)
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
 %         im_source_root = source_root;
 
-        sz=.03;
+        sz=.1;
         hF=figure;
         hold all
-        for i=1:length(imnames)
+        for i=1:2 %length(imnames)
             imName=[source_root,imnames{i}];
-            im0=double(imread(imName));
+            im0=imread(imName);
             centerX=distMatrixMap(i,1);
             centerY=distMatrixMap(i,2);
             X1=centerX-(sz/2)*2;

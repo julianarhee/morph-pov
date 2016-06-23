@@ -91,6 +91,9 @@ elif method=='project':
     print "Using scalar projection..."
 
     projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format, save_samples)
+
+    print "DID IT"
+
     proj.plot_all_projections(outdirectory, projs, idxs, im_format, show_plot=plot)
     proj.plot_sampled_projections(outdirectory, idxs, im_format, show_plot=plot)
     # if plot:
