@@ -6,21 +6,30 @@ close all
 % im_root='/nas/volume1/behavior/stimuli/pnas_morphs/morph2000/morph2000_gray_resize/';
 % base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
 
-source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pov20/'; % .mat files
-out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/pov20_pcorr_fixedref/'; % output pngs
+addpath(genpath('./helpers'))
+addpath(genpath('./hmaxMatlab'))
 
-im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20/pov20_gray_resize/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pov2000_final/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/samples/V1_pcorr_fixedref_minmax/';
 
-base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/samples/';
+im_root='/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/final/';
 
-parts = strsplit(source_root,'/');
-stimset = parts{end-1};
+base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
 
 
-if ~isdir(out_root)
-    mkdir(out_root)
-    sprintf('Created output dir: %s', out_root)
-end
+tmp_source = strsplit(source_root,'/');
+source = tmp_source{end-1};
+tmp_out = strsplit(out_root, '/');
+stimset = tmp_out{end-1};
+
+D = struct();
+D.source = source;
+D.stimset = stimset;
+
+% if ~isdir(out_root)
+%     mkdir(out_root)
+%     sprintf('Created output dir: %s', out_root)
+% end
 
 finfo = dir([source_root,'*.mat']);
 fnames = cell(1, length(finfo));
@@ -28,24 +37,15 @@ for i=1:length(finfo)
     fnames{i} = finfo(i).name;
 end
 fnames = sort_nat(fnames);
-
-% can't load all 5k feature vectors, so get correlations in chunks:
-% only need col 1 of the correlation matrix, since just want linear steps
-% from "start" (image 1 in morph series, object A)) to "end" (last image, object B).
-
+    
 first_im = load([source_root, fnames{1}]);
 first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
 sprintf('Loaded first feature vector %s from: %s', fnames{1}, source_root)
 
-% chunk_size = 5;
-% 
-% start_idx = 1;
-% last_idx = chunk_size;
-% nchunks = floor(length(fnames)/chunk_size);
-    
-corr_vect = [];
+D.dist_vect = [];
 curr_vect_idx = 1;
+
 while 1
     
     sprintf('IDX: %i', curr_vect_idx)
@@ -59,7 +59,7 @@ while 1
     
     pcorr = corr(first_feature_vect', curr_vect.featureVector');
     
-    corr_vect = [corr_vect; pcorr];
+    D.dist_vect = [D.dist_vect; pcorr];
     
     curr_vect_idx = curr_vect_idx + 1;
     
@@ -69,10 +69,14 @@ while 1
 
 end
 
+D.fnames = fnames;
+D.first_feature_vect = first_feature_vect;
+
 % save this, bec it takes forever to make...
-save([base_dir,sprintf('V1features_pcorr_fixedref_%s.mat', num2str(length(corr_vect)))], ...
-    'corr_vect', 'fnames', 'first_feature_vect')
-fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_pcorr_fixedref_%s.mat', num2str(length(corr_vect)))])
+matname = sprintf('V1_pcorr_fixedref_%s.mat', num2str(length(D.dist_vect)));
+save([base_dir, matname], 'D')
+
+fprintf('Saved .mat to: %s', [base_dir, matname])
 
 
 %%
@@ -92,44 +96,45 @@ fprintf('Saved .mat to: %s', [base_dir,sprintf('V1features_pcorr_fixedref_%s.mat
 %     'check_vect', '-append')
 
 %% Get linearly-spaced samples
-
-nmorphs = 20;
-% lin_samples = linspace(min(corr_vect), max(corr_vect), nmorphs+2); % add 2 to account for anchors
-lin_samples = linspace(corr_vect(1), corr_vect(end), nmorphs+2);
-
-% Get indices into stimulus bank (im_root):
-sample_idxs = [];
-for i=1:length(lin_samples)
-    [c index] = min(abs(corr_vect-lin_samples(i)))
-    sample_idxs = [sample_idxs; index];
-end
-
-im_info = dir([im_root,'*.png']);
-im_names = cell(1, length(im_info));
-for i=1:length(im_info)
-    im_names{i} = im_info(i).name;
-end
-im_names = sort_nat(im_names);
-
-if strfind(stimset, 'pov20')
-    sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
-end
-     
-
-% and save them...
-for i=1:length(sample_idxs)
-   curr_sample_idx = sample_idxs(i);
-   
-   curr_sample = im_names(curr_sample_idx)
-   src = strcat(im_root, curr_sample);
-   src = src{1};
-   dest = strcat(out_root, curr_sample);
-   dest = dest{1}
-   copyfile(src, dest);
-end
-
-%%
-% CRAP SAMPLING due to non-linear changes:
-sample_idxs = linspace(0, nmorphs+1, nmorphs+2);
-save([base_dir,sprintf('V1features_pcorr_fixedref_%s.mat', num2str(length(fnames)))], ...
-    'sample_idxs', '-append')
+% 
+% nmorphs = 20;
+% lin_samples = linspace(min(D.dist_vect), max(D.dist_vect), nmorphs+2); % add 2 to account for anchors
+% % lin_samples = linspace(D.dist_vect(1), D.dist_vect(end), nmorphs+2);
+% 
+% % Get indices into stimulus bank (im_root):
+% sample_idxs = [];
+% for i=1:length(lin_samples)
+%     [c index] = min(abs(D.dist_vect-lin_samples(i)))
+%     sample_idxs = [sample_idxs; index];
+% end
+% 
+% im_info = dir([im_root,'*.png']);
+% im_names = cell(1, length(im_info));
+% for i=1:length(im_info)
+%     im_names{i} = im_info(i).name;
+% end
+% im_names = sort_nat(im_names);
+% 
+% if strfind(stimset, 'pov20')
+%     sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+% end
+%      
+% D.sample_idxs = sample_idxs;
+% % and save them...
+% for i=1:length(sample_idxs)
+%    curr_sample_idx = sample_idxs(i);
+%    sprintf('index: %i, sample num: %i', i, curr_sample_idx)
+%    
+%    curr_sample = im_names(curr_sample_idx);
+%    src = strcat(im_root, curr_sample);
+%    src = src{1};
+%    %dest = strcat(out_root, curr_sample);
+%    dest = strcat(out_root, 'morph', num2str(i-1), '.png');
+%    %dest = dest{1}
+%    copyfile(src, dest);
+% end
+% 
+% %%
+% % CRAP SAMPLING due to non-linear changes:
+% sample_idxs = linspace(0, nmorphs+1, nmorphs+2);
+% save([base_dir, matname], 'D', '-append')

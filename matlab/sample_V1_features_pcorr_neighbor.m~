@@ -1,7 +1,7 @@
 clear all
 close all
 
-addpath(genpath('./helpers'))
+addpath(genpath('/helpers'))
 addpath(genpath('./hmaxMatlab'))
 
 source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pov2000_final/';
@@ -38,7 +38,7 @@ fnames = cell(1, length(finfo));
 for i=1:length(finfo)
     fnames{i} = finfo(i).name;
 end
-fnames = sort_nat(fnames);
+D.fnames = sort_nat(fnames);
     
 D.dist_vect = [];
 curr_vect_idx = 1;
@@ -54,7 +54,7 @@ while 1
     
     pcorr = corr(curr_vect.featureVector', next_vect.featureVector');
 
-    D.dist_vect = [D.dist_vect; pcorr];
+    Ddist_vect = [Ddist_vect; pcorr];
     
 
     curr_vect_idx = curr_vect_idx + 1;
@@ -66,11 +66,10 @@ while 1
 
 end
 
-D.fnames = fnames;
 
 % save this, bec it takes forever to make...
-matname = sprintf('V1_pcorr_neighbor_%s.mat', num2str(length(D.dist_vect)));
-save([base_dir, matname], 'D')
+matname = sprintf('V1_pcorr_neighbor_%s.mat', num2str(length(dist_vect)));
+save([base_dir, matname], 'dist_vect', 'fnames')
 
 fprintf('Saved .mat to: %s', [base_dir, matname])
 

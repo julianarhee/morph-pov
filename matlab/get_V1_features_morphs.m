@@ -6,8 +6,8 @@ close all
 addpath('./hmaxMatlab')
 addpath('./helpers')
 
-source_root='/nas/volume1/behavior/stimuli/pnas_morphs/samples/pixels_pcorr_neighbor/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/pcorr_neighbor20/';
+source_root='/nas/volume1/behavior/stimuli/pnas_morphs/samples/pixels_project_na/';
+out_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pixels_project_na/';
 
 if ~isdir(out_root)
     mkdir(out_root)

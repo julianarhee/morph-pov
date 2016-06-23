@@ -81,7 +81,7 @@ for f=1:length(matnames)
     if strfind(stimset, 'euclid')
         cumsum_total = cumsum(distance_vect);
     else
-        cumsum_total = cumsum(corr_vect);
+        cumsum_total = cumsum(D.dist_vect);
     end
     start_point = cumsum_total(1);
     end_point = cumsum_total(end);
@@ -131,7 +131,7 @@ for f=1:length(matnames)
     % Crap sampling due to nonlinear distances?  Generally seems okay for neighbor comparisons (both euclid and pcorr)
     % only seems to be a problem for fixed-ref...
 
-    save([base_dir,curr_mfile], ...
+    save([base_dir,matname], ...
         'cumsum_total', 'sample_idxs', '-append')
 
 end

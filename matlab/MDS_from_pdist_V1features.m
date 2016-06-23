@@ -12,10 +12,10 @@ input = 'V1features';
 
 if strfind(user_name, 'rhee') % ON DIXIE
     base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/samples/'; %,...
-    feature_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/';
+    feature_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1features/';
 else
     base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
-    feature_base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1_features/';
+    feature_base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1features/';
 end            
 
 sample_dirs = dir(base_root);
@@ -25,7 +25,7 @@ sample_dirs = sample_dirs(arrayfun(@(x) x.name(1), sample_dirs) ~= '.');
 D = struct();
 
 for CORR=1:length(corrTypes)
-    corrType = corrTypes{CORR};
+    corrType = corrTypes{CORR}
     
     for root=1:length(sample_dirs)
         clear dist_mat D M
@@ -64,7 +64,7 @@ for CORR=1:length(corrTypes)
             % Samples generated with python (i.e,. not using
             % V1-features) do not have associated sample_idxs...
             % Instead, use V1 features created for specific stimsets: 
-            feature_root = [feature_base_root, sprintf('%s_%s20/', D.sampled_distance, D.sampled_comparison)]
+            feature_root = [feature_base_root, sprintf('%s/', stimset)]
         end
 
         D.nstims = nstims
@@ -108,11 +108,18 @@ for CORR=1:length(corrTypes)
         
         curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, sprintf('_%s_%s_%i', D.sampled_distance, D.sampled_comparison, D.nstims)))
         curr_mfile = mfiles(curr_mfile_idx);
-        curr_mfile = curr_mfile{1}
+        
+        if isempty(curr_mfile)
+            fprintf('No m-file found, creating new...');
+        else
+            curr_mfile = curr_mfile{1};
+        end
 
-        if strfind(curr_mfile, '_fixedref')
-            sprintf('Skipping MDS for bad-sampling of %s stimset...', curr_mfile)
+        if ~isempty(curr_mfile)
+            if strfind(curr_mfile, '_fixedref')
+                sprintf('Skipping MDS for bad-sampling of %s stimset...', curr_mfile)
             continue;
+            end
         end
         
         save_new = 0;
