@@ -5,17 +5,15 @@ clc
 addpath(genpath('./helpers'))
 addpath(genpath('./hmaxMatlab'))
 
-corrTypes= {'euclidean'}; %{'correlation', 'euclidean'};
-input = 'V1features';
+corrTypes= {'correlati'}; %{'correlation', 'euclidean'};
+input = 'pixels';
 
 [~, user_name] = system('whoami');
 
 if strfind(user_name, 'rhee') % ON DIXIE
     base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/samples/'; %,...
-    feature_base_root = '/nas/volume1/behavior/stimuli/pnas_morphs/V1features/';
 else
     base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
-    feature_base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/V1features/';
 end            
 
 sample_dirs = dir(base_root);
@@ -45,22 +43,7 @@ for CORR=1:length(corrTypes)
 %             continue;
 %         end
 % 
-        if strfind(stimset, 'V1_')
 
-            feature_root = [feature_base_root, 'pov2000_final/'];
-        else
-
-            % Samples generated with python (i.e,. not using
-            % V1-features) do not have associated sample_idxs...
-            % Instead, use V1 features created for specific stimsets: 
-            feature_root = [feature_base_root, stimset, '/'];
-        end
-
-       I.feature_root = feature_root;
-       
-        %D.nstims = nstims
-        
-%         out_root=fullfile(parts{1:end-2});
         out_root = [strjoin(parts(1:end-3), '/'), '/figures/MDS/'];
         
         if ~isdir(out_root)
@@ -86,32 +69,38 @@ for CORR=1:length(corrTypes)
         imnames = sort_nat(imnames);
         sprintf('N sampled image: %i', length(imnames))
         
-        % Load main .mat for V1 feature vector to get the sample_idxs (need
-        % this to grab the correct V1-feature-vector from source bank.
+        % Load images and unravel:
 
-        % NO .MAT for any _fixedref, since sampling looked terrible
+        % FIND .mat if exists:
         main_mfiles = dir([base_root,'*.mat']);
         mfiles = cell(1,length(main_mfiles));
         for m=1:length(main_mfiles)
-            %curr_mfile = main_mfiles(m).name;
             mfiles{m} = main_mfiles(m).name;
         end
         
 %         curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, sprintf('%s_%s_%s', I.sampled_feature, I.sampled_distance, I.sampled_comparison)))
-        curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, stimset))
+        curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, [stimset, '_pix']))
         curr_mfile = mfiles(curr_mfile_idx);
 
-        if any(curr_mfile_idx) % This should just take the 1st found match (extended names will not find the basic root name)
+        if length(curr_mfile) > 1 % some names are made by appending name_X, so filter out correctly:
+            contained_here = ~cellfun('isempty', strfind(curr_mfile, stimset)); % this will find name_X correctly, but will call anythign starting with name_
+            curr_mfile = curr_mfile(contained_here);
+            if length(curr_mfile) > 1
+                curr_mfile = curr_mfile{1}; % just grab the first one if name is being searched
+            end
+        elseif length(curr_mfile) == 1
             curr_mfile = curr_mfile{1}
         else
             curr_mfile = '';
         end
-
+        
+        % LOAD struct w/ pdist and relevant info if it exists.  If not,
+        % create new:
         save_new = 0;
-        if isempty(curr_mfile) && ~any(strfind(stimset, 'V1_')) % V1-feature mats SHOULD have sample_idxs, so only do this for PIXEL-sampled sets
+        if isempty(curr_mfile)
             M = struct();
             M.sample_idxs = linspace(1, length(imnames), length(imnames));
-            curr_mfile = sprintf('%s.mat', stimset);
+            curr_mfile = sprintf('%s_pix.mat', stimset);
             save_new = 1;
         else
             
@@ -134,14 +123,13 @@ for CORR=1:length(corrTypes)
             end
         %M.pdist = struct();
         
-            sampled_feature_vects = [];
-            for idx=1:length(sidxs)
-                curr_feat = load([feature_root, sprintf('V1_features_morph%i.mat', (sidxs(idx)-1))]);
-                sampled_feature_vects = [sampled_feature_vects; curr_feat.featureVector];  % F = [F curr_feat.featureVector']; doesn't work.. too big
+            F = [];
+            for i=1:length(imnames)
+                curr_im = double(imread([source_root, imnames{i}]));
+                F = [F; reshape(curr_im, 1, numel(curr_im))];
             end
-            nsamples = length(sidxs);
 
-            dist_mat = pdist(sampled_feature_vects, corrType);
+            dist_mat = pdist(F, corrType);
             dist_mat=squareform(dist_mat);
 
             %get rid of float-point artifacts that make matrix unsymmetric
@@ -155,7 +143,7 @@ for CORR=1:length(corrTypes)
                 save([base_root, curr_mfile], 'M', '-append')
             end
         end
-        nsamples = length(sidxs);
+        nsamples = length(imnames);
 
         % opts = statset('Display','iter', 'MaxIter', 1500);
         opts = statset('MaxIter', 5000);
@@ -180,15 +168,11 @@ for CORR=1:length(corrTypes)
         outstring = [scatter_root, imname];
         sprintf('Saved SCATTER to:\n%s', outstring)
         
-%         saveas(hF,[scatter_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)])
-%         outstring = [scatter_root,corrType,sprintf('_%s_MDS_%s_scatter.png', input, stimset)];
-%         sprintf('Saved SCATTER to:\n%s', outstring)
-        
         %plot w/ images
     %     im_source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/pov20_gray_resize/';
 %         im_source_root = source_root;
         if strfind(corrType, 'euclidean')
-            sz = 5;
+            sz = 5000;
         else
             sz = .05;
         end
@@ -210,14 +194,9 @@ for CORR=1:length(corrTypes)
         %title('MDS map')
         title(sprintf('_%s_MDS_%s_scatter.png', input, stimset))
 
-        imname = sprintf('MDS_%s_%s_%s_images.png', stimset, corrType, input);
-        saveas(hF,[out_root,imname])
-        outstring = [out_root, imname];
+        saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)])
+        outstring = [out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)];
         sprintf('Saved IMAGES to:\n%s', outstring)
-        
-%         saveas(hF,[out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)])
-%         outstring = [out_root,corrType,sprintf('_%s_MDS_%s.png', input, stimset)];
-%         sprintf('Saved IMAGES to:\n%s', outstring)
 
     end
 
