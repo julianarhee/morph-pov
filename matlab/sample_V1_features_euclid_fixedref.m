@@ -13,7 +13,7 @@ addpath(genpath('./helpers'))
 addpath(genpath('./hmaxMatlab'))
 
 source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pov2000_final/';
-out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/V1_euclid_fixedref_reverse/';
+out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/V1_euclid_fixedref_last/';
 
 im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/final/';
 
@@ -41,7 +41,8 @@ for i=1:length(finfo)
 end
 fnames = sort_nat(fnames);
     
-first_im = load([source_root, fnames{1}]);
+% first_im = load([source_root, fnames{1}]);
+first_im = load([source_root, fnames{end}]);
 first_feature_vect = first_im.featureVector;  % just need 1st column of corr mat
 
 sprintf('Loaded first feature vector %s from: %s', fnames{1}, source_root)
@@ -74,7 +75,7 @@ D.fnames = fnames;
 D.first_feature_vect = first_feature_vect;
 
 % save this, bec it takes forever to make...
-matname = sprintf('V1_euclid_fixedref_reverse_%s.mat', num2str(length(D.dist_vect)));
+matname = sprintf('V1_euclid_fixedref_last_%s.mat', num2str(length(D.dist_vect)));
 save([base_dir, matname], 'D')
 
 fprintf('Saved .mat to: %s', [base_dir, matname])
@@ -94,7 +95,7 @@ fprintf('Saved .mat to: %s', [base_dir, matname])
 
 %% Load .mat if exists to samlpe:
 
-mname = 'V1_euclid_fixedref_';
+mname = 'V1_euclid_fixedref';
 base_root = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
 
 mfiles = dir([base_root,'*.mat']);
@@ -118,9 +119,16 @@ nmorphs = 20;
 % lin_samples = linspace(min(distance_vect), max(distance_vect), nmorphs+2); % add 2 to account for anchors
 lin_samples = linspace(D.dist_vect(1), D.dist_vect(end), nmorphs+2);
 
+    cumsum_total = cumsum(D.dist_vect);
+
+    start_point = cumsum_total(1);
+    end_point = cumsum_total(end);
+    lin_samples = linspace(start_point, end_point, nmorphs+2);
+    
+    
 sample_idxs = [];
 for i=1:length(lin_samples)
-    [c index] = min(abs(D.dist_vect-lin_samples(i)))
+    [c index] = min(abs(cumsum_total-lin_samples(i)))
     sample_idxs = [sample_idxs; index];
 end
 
