@@ -59,6 +59,10 @@ parser.add_option('--fixedref', action="store_true",
 parser.add_option('--no-save', action="store_false",
                   dest="save_samples", default="True", help="create new samples and save them")
 
+parser.add_option('--rev', action="store_true",
+                  dest="rev", default="False", help="end minus start?")
+
+
 (options, args) = parser.parse_args()
 
 imdirectory = options.imdir
@@ -73,6 +77,7 @@ method = options.method
 plot = options.plot
 fixedref = options.fixedref
 save_samples = options.save_samples
+rev = options.rev
 
 print "METHOD: %s" % method
 
@@ -90,12 +95,12 @@ elif method=='project':
 
     print "Using scalar projection..."
 
-    projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format, save_samples)
+    projs, idxs = proj.get_projected_morphs(nmorphs, imdirectory, outdirectory, im_format, save_samples, rev=rev)
 
     print "DID IT"
 
     proj.plot_all_projections(outdirectory, projs, idxs, im_format, show_plot=plot)
-    proj.plot_sampled_projections(outdirectory, idxs, im_format, show_plot=plot)
+    proj.plot_sampled_projections(outdirectory, idxs, im_format, show_plot=plot, rev=rev)
     # if plot:
         # proj.plot_sampled_projections(projs, idxs, imdirectory, show_plot=plot)
 

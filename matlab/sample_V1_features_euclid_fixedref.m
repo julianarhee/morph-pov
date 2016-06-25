@@ -12,12 +12,12 @@ close all
 addpath(genpath('./helpers'))
 addpath(genpath('./hmaxMatlab'))
 
-source_root='/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pov2000_final/';
-out_root='/nas/volume1/behavior/stimuli/pnas_morphs/samples/V1_euclid_fixedref/';
+source_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/V1features/pov2000_final/';
+out_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/V1_euclid_fixedref_reverse/';
 
-im_root='/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/final/';
+im_root='/media/nas/volume1/behavior/stimuli/pnas_morphs/POV/pov2000/final/';
 
-base_dir = '/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
+base_dir = '/media/nas/volume1/behavior/stimuli/pnas_morphs/samples/';
 
 
 tmp_source = strsplit(source_root,'/');
@@ -58,7 +58,8 @@ while 1
     end
          
     curr_vect = load([source_root, fnames{curr_vect_idx}]);
-    dist = norm(first_feature_vect' - curr_vect.featureVector'); % Get Euclidean distance between vec1 and curr_vect
+    %dist = norm(first_feature_vect' - curr_vect.featureVector'); % Get Euclidean distance between vec1 and curr_vect
+    dist = norm(curr_vect.featureVector' - first_feature_vect'); % Get Euclidean distance between vec1 and curr_vect
     D.dist_vect = [D.dist_vect; dist];
 
     curr_vect_idx = curr_vect_idx + 1;
@@ -73,7 +74,7 @@ D.fnames = fnames;
 D.first_feature_vect = first_feature_vect;
 
 % save this, bec it takes forever to make...
-matname = sprintf('V1_euclid_fixedref_%s.mat', num2str(length(D.dist_vect)));
+matname = sprintf('V1_euclid_fixedref_reverse_%s.mat', num2str(length(D.dist_vect)));
 save([base_dir, matname], 'D')
 
 fprintf('Saved .mat to: %s', [base_dir, matname])
@@ -133,9 +134,9 @@ end
 im_names = sort_nat(im_names);
 % 
 
-if strfind(stimset, 'pov20')
-    sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
-end
+% if strfind(stimset, 'pov20')
+%     sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
+% end
         
 D.sample_idxs = sample_idxs;
 
@@ -150,6 +151,8 @@ for i=1:length(sample_idxs)
    copyfile(src, dest);
 end
 
+save([base_dir, matname], 'D', '-append')
+
 %%
 % CRAP SAMPLING due to non-linear changes:
 % sample_idxs = linspace(1, nmorphs+2, nmorphs+2);
@@ -157,5 +160,5 @@ end
 % save([base_dir,sprintf('V1features_euclid_fixedref_%s.mat', num2str(length(fnames)))], ...
 %     'sample_idxs', '-append')
 
-save([base_dir, matname], 'D', '-append')
+% save([base_dir, matname], 'D', '-append')
 

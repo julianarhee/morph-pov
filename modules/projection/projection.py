@@ -90,6 +90,44 @@ def copy_file(src, dest):
 # ext = '.png' #im_format
 # nmorphs = 20
 
+def get_projection_vectors_reverse(imdirectory, ext):
+
+    '''
+    Return difference vetor, list of all vector differences from one of the end points. 
+    '''
+
+    fmorphs = [f for f in os.listdir(imdirectory) if f.endswith(ext)]
+    fmorphs = sorted(fmorphs,key=key_func)
+
+    start_morph = fmorphs[0]
+    img = Image.open(os.path.join(imdirectory, start_morph)).convert('F')
+    start_image = np.array(img).ravel()
+
+    end_morph = fmorphs[-1]
+    img = Image.open(os.path.join(imdirectory, end_morph)).convert('F')
+    end_image = np.array(img).ravel()
+
+    im_shape = img.size
+
+    difference_vect = end_image - start_image
+    difference_vect_unit = unit_vector(difference_vect)
+
+    # see_diff = difference_vect.reshape((im_shape[1], im_shape[0]))
+    # plt.imshow(see_diff)
+
+    diff_vects = []
+    for idx,im in enumerate(fmorphs[1:-1]): # only grab morphs (not anchors)
+        curr_morph = Image.open(os.path.join(imdirectory, im)).convert('F')
+        curr_image = np.array(curr_morph).ravel()
+        # curr_diff_vect = curr_image - start_image
+        curr_diff_vect = end_image - curr_image
+
+        diff_vects.append([idx, curr_diff_vect])
+
+    return fmorphs, difference_vect, diff_vects
+
+
+
 def get_projection_vectors(imdirectory, ext):
 
     '''
@@ -194,7 +232,7 @@ def plot_all_projections(outdirectory, projections, idxs, ext='.png', show_plot=
 
     imname = os.path.split(outdirectory)[1]+'_all_projection'
     # figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
-    figdir = os.path.split(outdirectory)[0]
+    figdir = os.path.join(os.path.split(os.path.split(outdirectory)[0])[0], 'figures')
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
@@ -209,9 +247,11 @@ def plot_all_projections(outdirectory, projections, idxs, ext='.png', show_plot=
 
 
 
-def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
-
-    fmorphs, difference_vect, diff_vects = get_projection_vectors(outdirectory, ext)
+def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True, rev=False):
+    if rev:
+        fmorphs, difference_vect, diff_vects = get_projection_vectors_reverse(outdirectory, ext)
+    else:
+        fmorphs, difference_vect, diff_vects = get_projection_vectors(outdirectory, ext)
 
     projections = project_vectors(difference_vect, diff_vects)
 
@@ -231,7 +271,7 @@ def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
 
     imname = os.path.split(outdirectory)[1]+'_sampled_projection'
     # figdir = os.path.join(os.path.split(imdirectory)[0], 'figures')
-    figdir = os.path.split(outdirectory)[0]
+    figdir = os.path.join(os.path.split(os.path.split(outdirectory)[0])[0], 'figures')
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
@@ -245,9 +285,12 @@ def plot_sampled_projections(outdirectory, idxs, ext='.png', show_plot=True):
         plt.show()
 
 
-def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext='.png', save_samples=True):
+def get_projected_morphs(nmorphs, imdirectory, outdirectory, ext='.png', save_samples=True, rev=False):
+    if rev:
+        fmorphs, difference_vect, diff_vects = get_projection_vectors_reverse(imdirectory, ext)
+    else:
+        fmorphs, difference_vect, diff_vects = get_projection_vectors(imdirectory, ext)
 
-    fmorphs, difference_vect, diff_vects = get_projection_vectors(imdirectory, ext)
     projections = project_vectors(difference_vect, diff_vects)
 
     idxs = find_projections(difference_vect, projections, nmorphs)
@@ -300,6 +343,10 @@ def run():
     parser.add_option('--no-save', action="store_false",
                       dest="save_samples", default="True", help="create new samples and save them")
 
+    parser.add_option('--rev', action="store_true",
+                      dest="rev", default="False", help="end minus start?")
+
+
     (options, args) = parser.parse_args()
 
     imdir = options.imdir
@@ -311,13 +358,14 @@ def run():
     nmorphs = int(options.nmorphs)
 
     save_samples = options.save_samples
+    rev = options.rev
 
-    projs, idxs = get_projected_morphs(nmorphs, imdir, outdir, ext, save_samples)
+    projs, idxs = get_projected_morphs(nmorphs, imdir, outdir, ext, save_samples, rev=rev)
 
 
     plot_all_projections(outdir, projs, idxs, ext, show_plot=plot)
 
-    plot_sampled_projections(outdir, idxs, ext, show_plot=plot)
+    plot_sampled_projections(outdir, idxs, ext, show_plot=plot, rev=rev)
 
 if __name__ == '__main__':
     run()

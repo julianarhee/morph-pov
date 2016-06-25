@@ -191,20 +191,49 @@ def plot_all_distances(outdirectory, distances, cumsumd, morphids, fixedref=Fals
     # plt.figure()
     # plt.plot(distances)
     # figdir = os.path.join(os.path.split(outdirectory)[0], 'figures')
-    figdir = os.path.split(outdirectory)[0]
+    figdir = os.path.join(os.path.split(os.path.split(outdirectory)[0])[0], 'figures')
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
 
-    plt.figure()
-    plt.subplot(1,2,1)
-    plt.plot([d[1] for d in distances])
+    # plt.figure()
+    # plt.subplot(1,2,1)
+
+    fig, (ax1, ax2) = plt.subplots(2, figsize=(20,10))
+
+    ax1.plot([d[1] for d in distances])
+
+    all_dists = [d[1] for d in distances]
+    A = [all_dists[i] for i in morphids]
+    B = morphids #range(len(A))
+    Z = morphids #[1:]
+    ax1.plot(B, A, 'r*')
+    for a, b, z in zip(B, A, Z):
+        # Annotate the points 5 _points_ above and to the left of the vertex
+        ax1.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+                    textcoords='offset points')
+
+
+    # plt.plot([d[1] for d in distances])
     plt.ylabel('euclidean distance between all images')
     plt.xlabel('im #')
     plt.title('Euclidian Distance')
 
-    plt.subplot(1,2,2)
-    plt.plot(cumsumd)
+
+    # plt.subplot(1,2,2)
+    # plt.plot(cumsumd)
+
+    ax2.plot(cumsumd)
+    A = [cumsumd[i] for i in morphids]
+    B = morphids #range(len(A))
+    Z = morphids #[1:]
+    ax2.plot(B, A, 'r*')
+    for a, b, z in zip(B, A, Z):
+        # Annotate the points 5 _points_ above and to the left of the vertex
+        ax2.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+                    textcoords='offset points')
+
+
     plt.title('Cum Sum of all distances')
 
     if fixedref is True:
@@ -227,7 +256,7 @@ def plot_all_distances(outdirectory, distances, cumsumd, morphids, fixedref=Fals
 def plot_sampled_distances(outdirectory, morphids, fixedref=False, ext='.png', show_plot=True):
 
         # plt.figure()
-    figdir = os.path.split(outdirectory)[0]
+    figdir = os.path.join(os.path.split(os.path.split(outdirectory)[0])[0], 'figures')
     # ims = os.listdir(outdirectory)
     # ims = sorted([i for i in ims if i.endswith(ext)], key=key_func)
 

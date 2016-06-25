@@ -22,7 +22,7 @@ sample_dirs = dir(base_root);
 sample_dirs = sample_dirs([sample_dirs.isdir]);
 sample_dirs = sample_dirs(arrayfun(@(x) x.name(1), sample_dirs) ~= '.');
 
-D = struct();
+I = struct();
 
 for CORR=1:length(corrTypes)
     corrType = corrTypes{CORR}
@@ -35,13 +35,13 @@ for CORR=1:length(corrTypes)
         stimset = parts{end-1};
         
         cond_info = strsplit(stimset, '_');
-        D.source_root = source_root;
-        D.stimset = stimset;
-        D.sampled_feature = cond_info{1};
-        D.sampled_distance = cond_info{2};
-        D.sampled_comparison = cond_info{3};
+        I.source_root = source_root;
+        I.stimset = stimset;
+        I.sampled_feature = cond_info{1};
+        I.sampled_distance = cond_info{2};
+        I.sampled_comparison = cond_info{3};
         
-        if strfind(stimset, 'V1_euclid_neighbor')
+        if strfind(stimset, 'pixels') | strfind(stimset, 'pov20')
             continue;
         end
 % 
@@ -56,6 +56,7 @@ for CORR=1:length(corrTypes)
             feature_root = [feature_base_root, stimset, '/'];
         end
 
+       I.feature_root = feature_root;
        
         %D.nstims = nstims
         
@@ -96,7 +97,7 @@ for CORR=1:length(corrTypes)
             mfiles{m} = main_mfiles(m).name;
         end
         
-        curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, sprintf('%s_%s_%s', D.sampled_feature, D.sampled_distance, D.sampled_comparison)))
+        curr_mfile_idx = ~cellfun('isempty', strfind(mfiles, sprintf('%s_%s_%s', I.sampled_feature, I.sampled_distance, I.sampled_comparison)))
         curr_mfile = mfiles(curr_mfile_idx);
 
         if any(curr_mfile_idx)
@@ -106,17 +107,17 @@ for CORR=1:length(corrTypes)
         end
 
 
-        if strfind(curr_mfile, '_fixedref') & strfind(curr_mfile, 'V1_')
-            sprintf('Skipping MDS for bad-sampling of %s stimset...', curr_mfile)
-            continue;
-            end
-        end
+%         if strfind(curr_mfile, '_fixedref') & strfind(curr_mfile, 'V1_')
+%             sprintf('Skipping MDS for bad-sampling of %s stimset...', curr_mfile)
+%             continue;
+%             end
+%         end
         
         save_new = 0;
-        if isempty(curr_mfile)
+        if isempty(curr_mfile) & ~strfind(stimset, 'V1_') % V1-feature mats SHOULD have sample_idxs...
             M = struct();
             M.sample_idxs = linspace(1, length(imnames), length(imnames));
-            curr_mfile = sprintf('%s_%s_%s.mat', D.sampled_feature, D.sampled_distance, D.sampled_comparison);
+            curr_mfile = sprintf('%s_%s_%s.mat', I.sampled_feature, I.sampled_distance, I.sampled_comparison);
             save_new = 1;
         else
             
@@ -126,19 +127,21 @@ for CORR=1:length(corrTypes)
             end
         end
             
-        if isfield(M, 'pdist') && isfield(M.pdist, corrType)
-            dist_mat = M.pdist.(corrType);
-            nsamples = length(M.sample_idxs);
-        else
-            if ~isfield(M, 'pdist')
-                M.pdist = struct();
-            end
+%         if isfield(M, 'pdist') && isfield(M.pdist, corrType)
+%             dist_mat = M.pdist.(corrType);
+%             nsamples = length(M.sample_idxs);
+%         else
+%             if ~isfield(M, 'pdist')
+%                 M.pdist = struct();
+%             end
+        M.pdist = struct();
+        
             sampled_feature_vects = [];
-            for idx=1:length(M.sample_idxs)
-                curr_feat = load([feature_root, sprintf('V1_features_morph%i.mat', (M.sample_idxs(idx)-1))]);
+            for idx=1:length(M.D.sample_idxs)
+                curr_feat = load([feature_root, sprintf('V1_features_morph%i.mat', (M.D.sample_idxs(idx)-1))]);
                 sampled_feature_vects = [sampled_feature_vects; curr_feat.featureVector];  % F = [F curr_feat.featureVector']; doesn't work.. too big
             end
-            nsamples = length(M.sample_idxs);
+            nsamples = length(M.D.sample_idxs);
 
             dist_mat = pdist(sampled_feature_vects, corrType);
             dist_mat=squareform(dist_mat);
@@ -146,12 +149,14 @@ for CORR=1:length(corrTypes)
             %get rid of float-point artifacts that make matrix unsymmetric
             dist_mat=round(dist_mat*10000)/10000;
             M.pdist.(corrType) = dist_mat;
+            M.I = I;
+            
             if save_new==1
                 save([base_root, curr_mfile], 'M')
             else
                 save([base_root, curr_mfile], 'M', '-append')
             end
-        end
+%         end
         
 
         % opts = statset('Display','iter', 'MaxIter', 1500);

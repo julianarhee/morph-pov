@@ -168,7 +168,7 @@ def plot_all_distances(outdirectory, distances, morphids, fixedref=False, show_p
     # plt.figure()
     # plt.plot(distances)
     # figdir = os.path.join(os.path.split(outdirectory)[0], 'figures')
-    figdir = os.path.split(outdirectory)[0]
+    figdir = os.path.join(os.path.split(os.path.split(outdirectory)[0])[0], 'figures')
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
@@ -192,7 +192,7 @@ def plot_all_distances(outdirectory, distances, morphids, fixedref=False, show_p
     B = mids #range(len(A))
     Z = mids
 
-    fig, (ax1, ax2) = plt.subplots(2)
+    fig, (ax1, ax2) = plt.subplots(2, figsize=(20,10))
 
     ax1.plot([d[1] for d in distances])
     plt.ylabel('correlation between images')
@@ -207,8 +207,14 @@ def plot_all_distances(outdirectory, distances, morphids, fixedref=False, show_p
     ax1.set_title('P-correlaton between image n and n+1')
 
     # plt.subplot(1,2,2)
+
+    cumsum = scipy.cumsum([d[1] for d in distances])
+    A = [cumsum[i] for i in mids]
+    B = mids #range(len(A))
+    Z = mids
+
     ax2.plot(scipy.cumsum([d[1] for d in distances]))
-    plt.title('Cum Sum of all distances')
+    # plt.title('Cum Sum of all distances')
 
     # cums = scipy.cumsum[d[1] for d in distances]
     # A = [cums[i] for i in mids]
@@ -216,9 +222,9 @@ def plot_all_distances(outdirectory, distances, morphids, fixedref=False, show_p
     ax2.plot(B, A, 'r*', markerSize = 10)
     for a, b, z in zip(B, A, Z):
         # Annotate the points 5 _points_ above and to the left of the vertex
-        ax1.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
+        ax2.annotate('{}'.format(z), xy=(a,b), xytext=(-5, 5), ha='right',
                     textcoords='offset points')
-    ax1.set_title('P-correlaton between image n and n+1')
+    ax2.set_title('Cum Sum of all distances')
 
 
     if fixedref is True:
@@ -241,7 +247,7 @@ def plot_all_distances(outdirectory, distances, morphids, fixedref=False, show_p
 def plot_sampled_distances(outdirectory, morphids, fixedref=False, ext='.png', show_plot=True):
 
         # plt.figure()
-    figdir = os.path.split(outdirectory)[0]
+    figdir = os.path.join(os.path.split(os.path.split(outdirectory)[0])[0], 'figures')
     # ims = os.listdir(outdirectory)
     # ims = sorted([i for i in ims if i.endswith(ext)], key=key_func)
 
