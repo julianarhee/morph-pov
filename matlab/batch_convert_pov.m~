@@ -198,62 +198,63 @@ for r=1:length(all_rots_y)
     % Read in LAST morph:
     % Then load and check generated:
     % Then load and check generated:
-    for morph=(nmorph_images/2):nmorph_images-1
+    for morph=0:(nmorph_images/2)-1
         curr_morph_fn = sprintf('morph%i_y%i.png', morph, curr_rot)
         
-        im2 = imread(fullfile(size_root, curr_morph_fn));
-        figure(); image(im2); map=gray(256); colormap(map)
-        hold on;
-        [col_bounds_im2, row_bounds_im2] = FindImageBoundingBox_call( im2, FlagPlotBoundaries );
+    curr_morph_fn = sprintf('morph%i_y%i.png', nmorph_images-1, curr_rot)
+    im2 = imread(fullfile(size_root, curr_morph_fn));
+    figure(); image(im2); map=gray(256); colormap(map)
+    hold on;
+    [col_bounds_im2, row_bounds_im2] = FindImageBoundingBox_call( im2, FlagPlotBoundaries );
 
-        title('IMAGE 2')
-        disp(['im2 SIZE row: ', num2str(row_bounds_im2(2)-row_bounds_im2(1)+1)])
-        disp(['im2 SIZE col: ', num2str(col_bounds_im2(2)-col_bounds_im2(1)+1)])
-        figpath = fullfile(result_fig_dir, sprintf('BB_%s', curr_morph_fn));
-        saveas(gcf, figpath);
-        close(gcf);
+    title('IMAGE 2')
+    disp(['im2 SIZE row: ', num2str(row_bounds_im2(2)-row_bounds_im2(1)+1)])
+    disp(['im2 SIZE col: ', num2str(col_bounds_im2(2)-col_bounds_im2(1)+1)])
+    figpath = fullfile(result_fig_dir, sprintf('BB_%s', curr_morph_fn));
+    saveas(gcf, figpath);
+    close(gcf);
     
-        % Create correct-sized background:
-        crop = im2(row_bounds_im2(1):row_bounds_im2(2), col_bounds_im2(1):col_bounds_im2(2));
-        img_new2 = PasteImageIntoBackgroundWithGivenDimensions( crop, size(N2,1), size(N2,2) );
-        [col_bounds_new2, row_bounds_new2] = FindImageBoundingBox_call( img_new2, FlagPlotBoundaries );
+    % Create correct-sized background:
+    crop = im2(row_bounds_im2(1):row_bounds_im2(2), col_bounds_im2(1):col_bounds_im2(2));
+    img_new2 = PasteImageIntoBackgroundWithGivenDimensions( crop, size(N2,1), size(N2,2) );
+    [col_bounds_new2, row_bounds_new2] = FindImageBoundingBox_call( img_new2, FlagPlotBoundaries );
 
-        % Shift object by appropriate # pixels to diff-match N1:
-        row_shift2 = row_bounds_N2(2) - row_bounds_new2(2);
-        col_shift2 = col_bounds_N2(2) - col_bounds_new2(2);
+    % Shift object by appropriate # pixels to diff-match N1:
+    row_shift2 = row_bounds_N2(2) - row_bounds_new2(2);
+    col_shift2 = col_bounds_N2(2) - col_bounds_new2(2);
 
-        se = translate(strel(1), [row_shift2 col_shift2]);
-        img_tr2 = imdilate(img_new2,se);
-        [col_bounds_tr2, row_bounds_tr2] = FindImageBoundingBox_call( img_tr2, FlagPlotBoundaries );
-        if all(row_bounds_tr2==row_bounds_N2) && all(col_bounds_tr2==col_bounds_N2)
-            disp('MATCH!')
-            disp(['N2 bounds row, ', mat2str(row_bounds_N2)])
-            disp(['N2 bounds col, ', mat2str(col_bounds_N2)])
-            disp(['SHIFT in ROW: ', num2str(row_shift2)])
-            disp(['SHIFT in COL: ', num2str(col_shift2)])
-        else
-            disp('BAD MATCH!')
-            disp(['N2 bounds row, ', mat2str(row_bounds_N2)])
-            disp(['N2 bounds col, ', mat2str(col_bounds_N2)])
-            disp(['N2 SIZE row: ', num2str(row_bounds_N2(2)-row_bounds_N2(1)+1)])
-            disp(['N2 SIZE col: ', num2str(col_bounds_N2(2)-col_bounds_N2(1)+1)])
-        end
-
-        outpath = fullfile(final_root, curr_morph_fn);
-        imwrite( img_tr2, outpath ); 
-
-        DIFF = N2 - img_tr2;
-        figure(); image(DIFF);
-        title('DIFF: N2 - final image')
-        figpath = fullfile(result_fig_dir, sprintf('DIFF_%s', curr_N2_orig));
-        saveas(gcf, figpath);
-        close(gcf);
+    se = translate(strel(1), [row_shift2 col_shift2]);
+    img_tr2 = imdilate(img_new2,se);
+    [col_bounds_tr2, row_bounds_tr2] = FindImageBoundingBox_call( img_tr2, FlagPlotBoundaries );
+    if all(row_bounds_tr2==row_bounds_N2) && all(col_bounds_tr2==col_bounds_N2)
+        disp('MATCH!')
+        disp(['N2 bounds row, ', mat2str(row_bounds_N2)])
+        disp(['N2 bounds col, ', mat2str(col_bounds_N2)])
+        disp(['SHIFT in ROW: ', num2str(row_shift2)])
+        disp(['SHIFT in COL: ', num2str(col_shift2)])
+    else
+        disp('BAD MATCH!')
+        disp(['N2 bounds row, ', mat2str(row_bounds_N2)])
+        disp(['N2 bounds col, ', mat2str(col_bounds_N2)])
+        disp(['N2 SIZE row: ', num2str(row_bounds_N2(2)-row_bounds_N2(1)+1)])
+        disp(['N2 SIZE col: ', num2str(col_bounds_N2(2)-col_bounds_N2(1)+1)])
     end
+
+    outpath = fullfile(final_root, curr_morph_fn);
+    imwrite( img_tr2, outpath ); 
+
+    DIFF = N2 - img_tr2;
+    figure(); image(DIFF);
+    title('DIFF: N2 - final image')
+    figpath = fullfile(result_fig_dir, sprintf('DIFF_%s', curr_N2_orig));
+    saveas(gcf, figpath);
+    close(gcf);
+    
 end
 
 %%
 pos = [180 1 730 1300];
-morph_levels = [0 5 16 21];
+morph_levels = [0 10 21];
 object_names = {};
 for mi=1:length(morph_levels)
     if mi==1

@@ -10,21 +10,8 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 from math import *
-
 import optparse
-# import Image
-# import re
-
-# from scipy.stats import cumfreq
-# import shutil
-# import spread
-
-# from imageDiff import *
-
-# def keyFunc(afilename):
-#     nondigits = re.compile("\D")
-#     return int(nondigits.sub("", afilename))
-
+from utils.mapping import sigmap, linmap
 
 parser = optparse.OptionParser()
 parser.add_option('--headless', action="store_true", dest="headless",
@@ -33,94 +20,30 @@ parser.add_option('--headless', action="store_true", dest="headless",
 parser.add_option('--imformat', action="store",
                   dest="im_format", default="png", help="saved image format")
 parser.add_option('--nmorphs', action="store",
-                  dest="nmorphs", default="20", help="n morphs to generate (not incl anchors)")
+                  dest="nmorphs", default=20, help="n morphs to generate (not incl anchors)")
 parser.add_option('--append', action="store",
                   dest="append_name", default="", help="append string to saved file name")
 parser.add_option('--output-path', action="store",
                   dest="outdir", default="/tmp", help="output path for rendered images and povs")
-
+parser.add_option('-x', '--xrot', action="store",
+                  dest="xrot", default=0, help="X rotation for OBJECT [default 0]")
+parser.add_option('-y', '--yrot', action="store",
+                  dest="yrot", default=0, help="Y rotation for OBJECT [default 0]")
+parser.add_option('-z', '--zrot', action="store",
+                  dest="zrot", default=0, help="Z rotation for OBJECT [default 0]")
 
 (options, args) = parser.parse_args()
 
 outdir = options.outdir
-
 im_format = str(options.im_format)
 headless = options.headless
-
 n_real_morphs = int(options.nmorphs)
 
-
-def sigmoid(x, a=1, b=0):
-	return 1./(1+np.exp(-a*x-b))
-
-def sigmap(diffvec, nmorphs, constrain=[0,-1], a=1, b=0):
-	if type(diffvec)==float:
-		diffarray = np.asarray([diffvec])
-	else:
-		diffarray = diffvec
-	if constrain[1]==-1:
-		constrain[1]=nmorphs-1
-
-	morph_array = range(nmorphs)
-	morph_range = morph_array[constrain[1]] - morph_array[constrain[0]] + 1
-	centered = np.asarray(range(morph_range))-((morph_range-1)/2.) # center around 0
-	if morph_range < nmorphs:
-		tails = (nmorphs-morph_range)
-		morph_array[constrain[0]:constrain[1]+1]=centered
-		x = np.asarray(morph_array)
-		x[0:constrain[0]] = centered[0]
-		x[constrain[1]:nmorphs-1] = centered[-1]
-	else:
-		x = centered
-	y = sigmoid(x,a,b)
-	sig_start = y[constrain[0]+1]
-	sig_end = y[constrain[1]-1]
-	y[y<sig_start]=0
-	y[y>sig_end]=1
-	step = []
-	if len(diffarray) > 1:
-		for v in diffarray:
-			step.append(v*y)
-	else:
-		step = diffarray*y
-	stepmat = np.asarray(step)
-	return stepmat.T
-
-def linmap(diffvec, nmorphs, constrain=[0,-1]):
-	if type(diffvec)==float:
-		diffarray = np.asarray([diffvec])
-	else:
-		diffarray = diffvec
-	if constrain[1]==-1:
-		constrain[1]=nmorphs-1
-
-	morph_array = range(nmorphs)
-	morph_range = morph_array[constrain[1]] - morph_array[constrain[0]] + 1
-	if morph_range < nmorphs:
-		incr = (nmorphs-1)/float(morph_range-1)
-		morph_array[constrain[0]:constrain[1]+1] = np.arange(0,nmorphs,incr)
-		x = np.asarray(morph_array) # linear, from Start to End objects	
-	else:
-		x = np.asarray(morph_array)
-	y = x/float(nmorphs-1)
-	#set_strt = y[constrain[0]+1]
-	#set_end = y[constrain[1]-1]
-	y[0:constrain[0]]=0
-	y[constrain[1]:len(y)]=1
-	step = []
-	if len(diffarray) > 1:
-		for v in diffarray:
-			step.append(v*y)
-	else:
-		step = diffarray*y
-	stepmat = np.asarray(step)
-	return stepmat.T
-
+XROT = int(options.xrot)
+YROT = int(options.yrot)
+ZROT = int(options.zrot)
 
 # Create new output directory if it doesn't exist:
-# base_dir = 'output3'
-# base_dir = 'test_remake_scale'
-
 povdirectory =  '%s/pov' % outdir
 if not os.path.exists(povdirectory):
     os.makedirs(povdirectory)
@@ -136,8 +59,6 @@ if not os.path.exists(tmpdirectory):
 # ==================================================================
 # SET NUM OF MORPHS BETWEEN Strt and End:
 # ==================================================================
-
-# n_real_morphs = 30
 n_total_morphs = n_real_morphs+2 # first and last 'morph' are the originals
 
 
@@ -155,7 +76,6 @@ light_loc_diff = light_loc_end - light_loc_start
 
 # BLOBS --------------------------
 n_total_spheres = 4
-
 
 class Sphere(object):
 
@@ -197,9 +117,9 @@ class Step(object):
 # 	rotate <20,0,0>
 # }
 sphere1_start = np.array([
-					[0., -0.4, 0.5], 
-					[1., 1., 1.], 
-					[0., 0., 0.]
+					[0., -0.4, 0.5], # translate
+					[1., 1., 1.], 	 # scale
+					[0., 0., 0.]     # rotate
 					])
 sphere1_end = np.array([
 					[0., -0.2, 0.7], 
@@ -611,29 +531,8 @@ def run():
 
 		config['object_scale'] = '<%s>' % ', '.join(map(str, object_scale_start + object_scale_steps[morph_num]))
 
-		# config.update(
-		# 	# camloc='<%s>' % ', '.join(map(str, s_camloc+step_camloc[morphnum])),
-		# 	translate1='<%s>' % ', '.join(map(str, s_trans1+step_trans1[morphnum])),
-		# 	scale1='<%s>' % ', '.join(map(str, s_scale1+step_scale1[morphnum])),
-		# 	rotate1='<%s>' % ', '.join(map(str, s_rot1+step_rot1[morphnum])),
+		config['object_rotation'] = '<%i, %i, %i>' % (XROT, YROT, ZROT)
 
-		# 	translate2='<%s>' % ', '.join(map(str, s_trans2+step_trans2[morphnum])),
-		# 	scale2='<%s>' % ', '.join(map(str, s_scale2+step_scale2[morphnum])),
-		# 	rotate2='<%s>' % ', '.join(map(str, s_rot2+step_rot2[morphnum])),
-
-		# 	translate3='<%s>' % ', '.join(map(str, s_trans3+step_trans3[morphnum])),
-		# 	scale3='<%s>' % ', '.join(map(str, s_scale3+step_scale3[morphnum])),
-		# 	rotate3='<%s>' % ', '.join(map(str, s_rot3+step_rot3[morphnum])),
-		# 	nosesize=s_nosesize+step_nosesize[morphnum],
-
-		# 	translate4='<%s>' % ', '.join(map(str, s_trans4+step_trans4[morphnum])),
-		# 	scale4='<%s>' % ', '.join(map(str, s_scale4+step_scale4[morphnum])),
-		# 	rotate4='<%s>' % ', '.join(map(str, s_rot4+step_rot4[morphnum])),
-		# 	strengthA='%f' % strengthA,
-		# 	strengthB='%f' % strengthB,
-		# 	scale5='<%s>' % ', '.join(map(str, s_scale5+step_scale5[morphnum]))
-
-			# )
 
 		command = """
 		#include "colors.inc"
@@ -691,7 +590,7 @@ def run():
 		}
 
 	  	object{ StimBlob1 
-		  	rotate <0,0,0>
+		  	rotate {{object_rotation}}
 		  	translate {{object_translation}}
 		  	scale {{object_scale}}
 		  	pigment {White} 
@@ -709,8 +608,8 @@ def run():
 
 		# save formatted file: 
 		# imname = 'morph%i.pov' % morphnum
-		outpath = povdirectory + '/morph%i.pov' % int(morph_num)
-		impath = imdirectory + '/morph%i.%s' % (int(morph_num), im_format)
+		outpath = povdirectory + '/morph%i_y%i.pov' % (int(morph_num), int(YROT))
+		impath = imdirectory + '/morph%i_y%i.%s' % (int(morph_num), int(YROT), im_format)
 		with open(outpath, "wb") as fn:
 			fn.write(command)
 
