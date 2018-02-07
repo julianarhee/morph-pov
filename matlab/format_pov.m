@@ -1,10 +1,23 @@
 
-clear all; clc;
+% clear all; clc;
 
 % Input vars:
-base_dir = '/nas/volume1/behavior/stimuli/blob_transmorphs';
-nmorph_imgs = 23;
+% base_dir = '/nas/volume1/behavior/stimuli/blob_transmorphs';
+% nmorph_imgs = 23;
+
+function format_pov(base_dir, nmorph_imgs)
+
+nmorph_imgs = str2num(nmorph_imgs);
+
 middle_morph_idx = round(((nmorph_imgs-2)/2));
+
+%%
+source_root = fullfile(base_dir, 'im'); 
+
+finfo = dir(fullfile(source_root,'*.png')); % run resize on newly create grayscale ims
+fnames = {finfo(:).name}';
+fnames = sort_nat(fnames);
+fprintf('Found %i images to format\n', length(fnames));
 
 %rot_y = [-90, -60, -30, 0, 30, 60, 90];
 rot_y = [];
@@ -16,7 +29,6 @@ end
 rot_y = unique(rot_y);
 
 % Set output dirs:
-source_root = fullfile(base_dir, 'im'); 
 gray_dir = fullfile(base_dir, 'gray');                              % Output for grayscale images
 if ~isdir(gray_dir)
     mkdir(gray_dir)
@@ -222,16 +234,38 @@ movpath = fullfile(movie_dir, sprintf('%s.avi', movstring));
 movie2avi(F, movpath, 'fps', 1) %,'Compression','Cinepak')
 
 %%
-
-for r=1:length(pan_rots)
+rots_to_plot = rot_y(0:30:end);
+morphs_to_plot = 0:2:nmorph_imgs-1;
+nrots = length(rots_to_plot);
+nmorphs = length(morphs_to_plot);
+figure()
+pos = [100, 600, 2000, 700];
+   
+set(gcf, 'Position', pos);
+plotidx = 1;
+for r=1:length(rot_y)
     % Then load and check generated:
-    curr_rot = pan_rots(r);
+    curr_rot = rot_y(r);
 
-    midx = 1;
-    for morph=0:nmorph_ %0:(nmorph_images/2)-1
-        subplot(nmorphs_display,1,midx)
+    for morph=0:2:nmorph_imgs-1 %0:(nmorph_images/2)-1
+        subplot(nrots, nmorphs, plotidx)
         curr_morph_fn = sprintf('morph%i_y%i.png', morph, curr_rot);
+        im1 = imread(fullfile(size_dir, curr_morph_fn));
+        image(im1); map=gray(256); colormap(map)
+        set(gca,'xtick',[])
+        set(gca,'ytick',[])
+        plotidx = plotidx + 1;
+    end
+end
         
-        
-        
-        
+figpath = fullfile(base_dir, 'blob_transmorphs.png');
+figpath_pdf = fullfile(base_dir, 'blob_transmorphs.pdf');   
+
+img = getframe(gcf);
+imwrite(img.cdata, figpath);
+
+export_fig(figpath_pdf, gcf)
+
+close all
+
+end

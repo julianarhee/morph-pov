@@ -1,9 +1,12 @@
 
-clear all; clc;
+% clear all; clc;
 
 % Input vars:
-base_dir = '/nas/volume1/behavior/stimuli/blob_transmorphs';
-nmorph_imgs = 23;
+% base_dir = '/nas/volume1/behavior/stimuli/blob_transmorphs';
+% nmorph_imgs = 23;
+
+function format_pov(base_dir, nmorph_imgs)
+
 middle_morph_idx = round(((nmorph_imgs-2)/2));
 
 %%
@@ -253,3 +256,6 @@ img = getframe(gcf);
 imwrite(img.cdata, figpath);
 
 export_fig(figpath_pdf, gcf)
+
+
+end
