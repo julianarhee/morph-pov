@@ -34,6 +34,8 @@ YROT_stop = int(options.yrot_stop)
 YROT_step = int(options.yrot_step)
 
 yrots = [int(i) for i in np.arange(YROT_start, YROT_stop+YROT_step, YROT_step)]
+print yrots
+
 
 for yrot in yrots:
     print "*******************************************************************"
