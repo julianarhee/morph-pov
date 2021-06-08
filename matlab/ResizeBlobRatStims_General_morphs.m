@@ -27,7 +27,7 @@ crop = 1;
 
 % =========== Find the boundaries of the image resulting from averaging all views of both stimuli ===========
 IdxImg = 1;  
-Image2Load = [imdir, fnames{IdxImg}];
+Image2Load = fullfile(imdir, fnames{IdxImg});
 [img map] = imread( Image2Load );
 img_stack = img; % create mat stack to add subsequent images to
 IdxImg = IdxImg+1;
@@ -38,7 +38,7 @@ while 1
     end
    
     % Load image at right viewpoint
-    Image2Load = [imdir, fnames{IdxImg}];
+    Image2Load = fullfile(imdir, fnames{IdxImg});
     [img map] = imread( Image2Load );
 
     % Build stack matrix with all transformaitons
@@ -88,7 +88,7 @@ defaults = [1 length(fnames)];
 %             for v_x = 0
 
                 % Load image at right viewpoint
-                Image2Load = [imdir, fnames{defaults(Stim)}];
+                Image2Load = fullfile(imdir, fnames{defaults(Stim)});
                 [img map] = imread( Image2Load );
 
                 % Build stack matrix with all transformaitons
@@ -156,7 +156,7 @@ if FlagTranslate
 %                 for v_x = RangeView_x
 
                     % Load image at right viewpoint
-                    Image2Load = [imdir, fnames{Stim}];
+                    Image2Load = fullfile(imdir, fnames{Stim});
                     [img map] = imread( Image2Load );
 
                     % Translate image
@@ -171,7 +171,7 @@ if FlagTranslate
 %                     middle)
                     img_tr = imdilate(img,se);
                     
-                    OutName = [outdir, fnames{Stim}]
+                    OutName = fullfile(outdir, fnames{Stim});
                     imwrite( img_tr, OutName, 'png' ); 
                     %imshow(img_tr);
                     %drawnow;
@@ -219,11 +219,11 @@ rect = [xmin ymin width height];
 %             for v_x = RangeView_x
 
                 % Load image at right viewpoint
-                Image2Load = [imdir, fnames{Stim}];
+                Image2Load = fullfile(imdir, fnames{Stim});
                 [img map] = imread( Image2Load );
 
                 img_crop = imcrop(img,rect);
-                OutName = [outdir, fnames{Stim}];
+                OutName = fullfile(outdir, fnames{Stim});
                 h_f = figure;
                 imshow(img_crop);
                 imwrite( img_crop, OutName, 'png' ); 

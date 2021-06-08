@@ -24,9 +24,9 @@ import matplotlib.pyplot as plt
 import optparse
 
 # from imagemat import *
-import euclid as euc
-import projection as proj
-import correlation as corr
+from utils import euclid as euc
+from utils import projection as proj
+from utils import correlation as corr
 
 def key_func(afilename):
     nondigits = re.compile("\D")

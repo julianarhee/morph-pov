@@ -21,7 +21,7 @@ function [img_new] = PasteImageIntoBackground_call( img, Nrows_bck, Ncols_bck )
 
 % disp( '... in PasteImageIntoBackground_call' );
 
-[im_rows im_cols] = size(img);
+[im_rows, im_cols] = size(img);
 disp(['Image size = (', num2str(im_rows), 'x', num2str(im_cols), ')']);
 
 % Sanity check on the background dimensions
@@ -68,7 +68,7 @@ img_new( round(D_rows/2+1):round(D_rows/2+im_rows), D_cols/2+1:D_cols/2+im_cols 
 % figure;
 % imshow(img_new);
 % 
-% disp( '... END of PasteImageIntoBackground_call' );
+disp( '... END of PasteImageIntoBackground_call' );
 
 
 
